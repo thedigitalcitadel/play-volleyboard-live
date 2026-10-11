@@ -37,7 +37,7 @@ header h1{margin:0;font-size:22px;font-weight:900;flex:1}
   <div class="half" id="hB"><span class="srv"></span><div class="nm"></div><div class="pts">0</div><div class="meta"><span class="st"></span><span class="pips"></span></div></div>
 </section>
 <div class="info" id="info" hidden><span id="setno"></span><span class="sets" id="sets"></span><span id="upd"></span></div>
-<aside class="sponsor" aria-label="Sponsor"><a class="house-ad" id="house-ad" href="https://apps.apple.com/ca/app/sleep-train/id6794692229" rel="noopener" target="_blank" aria-label="Ad: Sleep Train">
+<aside class="sponsor" aria-label="Sponsor"><a class="house-ad" id="house-ad" href="get/sleep-train/" rel="noopener" target="_blank" aria-label="Ad: Sleep Train">
   <picture>
     <source media="(min-width: 760px)" srcset="ads/sleeptrain_728x90.png 1x, ads/sleeptrain_728x90@2x.png 2x" width="728" height="90">
     <img src="ads/sleeptrain_320x50.png" srcset="ads/sleeptrain_320x50.png 1x, ads/sleeptrain_320x50@2x.png 2x" width="320" height="50" alt="Ad: Sleep Train. Get the app.">
@@ -91,6 +91,9 @@ function start() {
   es.onerror = () => { if (!S) msg('Connecting…'); };
 }
 start();
-/* house ad: Android goes to Google Play; everything else to the App Store */
-if (/Android/i.test(navigator.userAgent)) $('house-ad').href = 'https://play.google.com/store/apps/details?id=com.thedigitalcitadel.sleeptrain';
+/* house ad routing: iPhone/iPad (incl. iPadOS desktop-mode Safari = Mac + touch) → App Store, Android → Google Play, else the get page */
+(() => { const ua = navigator.userAgent, a = $('house-ad');
+  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if (/Android/i.test(ua)) a.href = 'https://play.google.com/store/apps/details?id=com.thedigitalcitadel.sleeptrain';
+  else if (ios) a.href = 'https://apps.apple.com/ca/app/sleep-train/id6794692229'; })();
 </script></body></html>
