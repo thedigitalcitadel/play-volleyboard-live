@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>Play Volleyboard · Live score</title>
+<!-- Read-only viewer for /live/<id> (Firebase Realtime Database REST streaming). No SDK, no ads code, no tracking. -->
+<style>
+:root{--page:#E5E7EB;--acc:#FF3E00}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#111;background:var(--page)}
+main{min-height:100%;display:flex;flex-direction:column;gap:14px;padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));max-width:1100px;margin:0 auto}
+header{display:flex;align-items:center;gap:12px;border-bottom:5px solid var(--acc);padding-bottom:10px}
+header h1{margin:0;font-size:22px;font-weight:900;flex:1}
+.tag{font-weight:900;font-size:18px;padding:6px 14px;border-radius:999px;border:3px solid #111;background:#fff}
+.tag.live{background:#E8002D;color:#fff}.tag.live::before{content:'● '}
+.board{display:flex;gap:12px;flex:1;min-height:52vh}
+.half{flex:1;border:4px solid #111;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:6px;position:relative;min-width:0}
+.half .nm{font-size:clamp(20px,4vw,36px);font-weight:900;text-align:center;overflow-wrap:anywhere}
+.half .pts{font-size:clamp(90px,22vw,240px);font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.half .meta{font-size:clamp(16px,2.6vw,24px);font-weight:800;display:flex;gap:14px;align-items:center}
+.pips{display:flex;gap:6px}.pips i{width:14px;height:14px;border-radius:50%;border:2px solid currentColor}.pips i.u{background:currentColor}
+.srv{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:50%;background:#FFE600;border:3px solid #111;display:none}
+.half.s .srv{display:block}
+.info{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:18px;font-weight:800}
+.sets{display:flex;gap:10px}.sets span{background:#fff;border:2px solid #111;border-radius:10px;padding:2px 10px}
+.sponsor{border:3px dashed #777;border-radius:16px;min-height:90px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#666;background:#fff}
+.msg{font-size:22px;font-weight:800;text-align:center;margin:40px 0}
+@media (orientation:portrait){.board{flex-direction:column}}
+</style></head><body><main>
+<header><h1 id="title">Live score</h1><span class="tag" id="tag">…</span></header>
+<div id="msg" class="msg" hidden></div>
+<section class="board" id="board" hidden>
+  <div class="half" id="hA"><span class="srv"></span><div class="nm"></div><div class="pts">0</div><div class="meta"><span class="st"></span><span class="pips"></span></div></div>
+  <div class="half" id="hB"><span class="srv"></span><div class="nm"></div><div class="pts">0</div><div class="meta"><span class="st"></span><span class="pips"></span></div></div>
+</section>
+<div class="info" id="info" hidden><span id="setno"></span><span class="sets" id="sets"></span><span id="upd"></span></div>
+<aside class="sponsor" aria-label="Sponsor">Your sponsor here</aside>
+</main>
+<script>
+'use strict';
+const DB = 'https://play-volleyboard-default-rtdb.firebaseio.com';
+const $ = id => document.getElementById(id);
+const g = new URLSearchParams(location.search).get('g') || '';
+const hex = v => /^#[0-9A-Fa-f]{6}$/.test(v || '') ? v : null;
+const txt = (v, n) => String(v == null ? '' : v).slice(0, n || 40);
+let S = null;
+function msg(m) { $('msg').hidden = !m; $('msg').textContent = m || ''; }
+function render() {
+  if (!S) { $('board').hidden = $('info').hidden = true; msg('Waiting for the game to start…'); $('tag').textContent = '…'; return; }
+  msg(''); $('board').hidden = $('info').hidden = false;
+  const live = S.status !== 'ended';
+  $('tag').textContent = live ? 'Live' : 'Final'; $('tag').classList.toggle('live', live);
+  document.documentElement.style.setProperty('--page', hex(S.page) || '#E5E7EB'); document.documentElement.style.setProperty('--acc', hex(S.accent) || '#FF3E00');
+  const T = S.teams || {};
+  for (const k of ['A', 'B']) {
+    const t = T[k] || {}, h = $('h' + k);
+    h.style.background = hex(t.color) || (k === 'A' ? '#FF3E00' : '#1F5FD6'); h.style.color = hex(t.ink) || '#111';
+    h.querySelector('.nm').textContent = txt(t.name) || 'Team ' + k;
+    h.querySelector('.pts').textContent = +t.points || 0;
+    h.querySelector('.st').textContent = 'Sets ' + (+t.sets || 0);
+    const lim = Math.min(+S.toLimit || 0, 9), used = +t.timeouts || 0;
+    h.querySelector('.pips').innerHTML = lim ? Array.from({ length: lim }, (_, i) => `<i class="${i < used ? 'u' : ''}"></i>`).join('') : '';
+    h.classList.toggle('s', S.serving === k && live);
+  }
+  $('title').textContent = `${txt(T.A && T.A.name) || 'Team A'} vs ${txt(T.B && T.B.name) || 'Team B'}`;
+  $('setno').textContent = live ? 'Set ' + (+S.setNo || 1) : 'Match over';
+  $('sets').innerHTML = (Array.isArray(S.sets) ? S.sets : []).slice(0, 5).map(s => `<span>${+s.A || 0}–${+s.B || 0}</span>`).join('');
+  $('upd').textContent = S.updatedAt ? 'Updated ' + new Date(+S.updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' }) : '';
+}
+function setPath(path, data) {
+  if (path === '/' || path === '') { S = data; return; }
+  if (!S) S = {};
+  const ks = path.replace(/^\//, '').split('/'); let o = S;
+  for (let i = 0; i < ks.length - 1; i++) { o[ks[i]] = o[ks[i]] && typeof o[ks[i]] === 'object' ? o[ks[i]] : {}; o = o[ks[i]]; }
+  if (data === null) delete o[ks[ks.length - 1]]; else o[ks[ks.length - 1]] = data;
+}
+function start() {
+  if (!/^[a-z0-9]{6,32}$/.test(g)) { msg('This link is missing its game code.'); return; }
+  render();
+  const es = new EventSource(`${DB}/live/${g}.json`);
+  const on = e => { try { const d = JSON.parse(e.data); setPath(d.path, d.data); render(); } catch (x) {} };
+  es.addEventListener('put', on); es.addEventListener('patch', e => { try { const d = JSON.parse(e.data); for (const k in d.data) setPath((d.path === '/' ? '' : d.path) + '/' + k, d.data[k]); render(); } catch (x) {} });
+  es.addEventListener('cancel', () => msg('This game is not available.'));
+  es.onerror = () => { if (!S) msg('Connecting…'); };
+}
+start();
+</script></body></html>
