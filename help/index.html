@@ -26,9 +26,9 @@ body.on-stats #p-score{transform:translateX(-100%)}body.on-stats #p-stats{transf
 .card .nm{position:absolute;top:10px;left:14px;right:14px;font-weight:900;font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .pts{font-weight:900;font-size:min(200px,46vh);line-height:1;font-variant-numeric:tabular-nums}
 .card .sets{position:absolute;bottom:10px;left:14px;font-weight:900;font-size:15px}
-.card .off{font-weight:800;font-size:16px;opacity:.9;text-align:center;padding:0 16px}
+.card .pts{width:100%;text-align:center}.card .off{display:block;box-sizing:border-box;max-width:80%;margin:0 auto;padding:0 24px;font-weight:800;font-size:18px;line-height:1.3;opacity:.8;text-align:center;color:inherit}
 .mid{width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center}.mid .box{border:2px solid #111;border-radius:14px;background:#fff;padding:6px 4px;text-align:center;width:64px}.mid i{font-weight:900}.mid b{display:block;font-size:24px}
-.foot{position:absolute;left:calc(var(--sal) + 74px);bottom:calc(var(--sab) + 4px);font-weight:700;font-size:12px;color:#555}
+.foot[hidden]{display:none}.foot{position:absolute;left:calc(var(--sal) + 74px);bottom:calc(var(--sab) + 4px);font-weight:700;font-size:12px;color:#555}
 /* stats */
 .st{position:absolute;inset:calc(var(--sat) + 46px) calc(var(--sar) + 70px) calc(var(--sab) + 26px) calc(var(--sal) + 70px);display:grid;grid-template-columns:minmax(0,1fr) 200px;grid-template-rows:minmax(0,1fr) auto;gap:10px 12px}
 .court{border:2px solid #111;border-radius:18px;background:#fff;position:relative;display:flex;flex-direction:column;justify-content:space-evenly;padding:20px 16px 18px}
@@ -42,17 +42,21 @@ body.on-stats #p-score{transform:translateX(-100%)}body.on-stats #p-stats{transf
 .bench>b{font-weight:900;font-size:19px;flex:0 0 auto}.bench .d{width:54px;height:54px;font-size:22px;background:#fff;color:#111}
 .rc{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;gap:10px;min-height:0}
 .tapc{background:#111;color:#fff;border-radius:14px;padding:10px;text-align:center;display:flex;flex-direction:column;align-items:center}.tapc i{font-style:normal;font-size:24px;line-height:26px}.tapc b{font-size:19px}.tapc s{text-decoration:none;font-size:13px;opacity:.85}
-.saved{flex:1;border:2px solid #111;border-radius:14px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}.saved b{color:#1FAA59;font-size:15px}.saved .c{font-weight:900;font-size:34px;line-height:1.1}.saved small{font-weight:700;font-size:12px;color:#555}
+.saved{flex:1;border:2px solid #111;border-radius:14px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}.saved b{color:#12804A;font-size:15px}.saved .c{font-weight:900;font-size:34px;line-height:1.1}.saved small{font-weight:700;font-size:12px;color:#555}
+.chev{display:inline-block;vertical-align:-1px}
 .btn{min-height:48px;border:2px solid #111;border-radius:14px;background:#fff;box-shadow:0 3px 0 #111;font-weight:900;font-size:18px}.btn.dark{background:#111;color:#fff}.btn.pri{background:var(--our);color:var(--ourInk)}
-.setc{position:absolute;top:calc(var(--sat) + 10px);left:calc(50% + 60px);height:30px;padding:0 12px;border:2px solid #111;border-radius:999px;background:#fff;font-weight:800;font-size:14px;z-index:4}
+.setc.flash{background:#FFE600;transition:none}.setc{transition:background 400ms;position:absolute;top:calc(var(--sat) + 10px);left:calc(50% + 60px);height:30px;padding:0 12px;border:2px solid #111;border-radius:999px;background:#fff;font-weight:800;font-size:14px;z-index:4}
 .mini{position:fixed;top:calc(var(--sat) + 8px);right:calc(var(--sar) + 14px);z-index:7;display:flex;gap:4px;align-items:center;font-weight:900;font-size:14px;background:#fff;border:2px solid #111;border-radius:12px;padding:3px 8px}.mini[hidden]{display:none}.mini span{border-radius:6px;padding:0 6px}
 /* player card */
 .scrim{position:fixed;inset:0;background:rgba(17,17,17,.45);z-index:20;display:flex;align-items:center;justify-content:center}.scrim[hidden]{display:none}
 .pc{background:#fff;border:3px solid #111;border-radius:24px;box-shadow:0 6px 0 #111;padding:16px 20px;width:min(580px,92vw)}
 .pc .top{display:flex;align-items:center;gap:14px}.pc .top .d{box-shadow:none}.pc .t{flex:1;min-width:0}.pc .t b{display:block;font-size:23px;font-weight:900;line-height:1.15}.pc .t small{font-weight:700;font-size:13px;color:#555}
 .acts{display:grid;grid-template-columns:repeat(12,1fr);gap:10px;margin-top:12px}
-.act{grid-column:span 3;height:58px;position:relative;border:2px solid #111;border-radius:14px;background:#fff;box-shadow:0 3px 0 #111;font-weight:900;font-size:18px}.act.e{grid-column:span 4;background:#FFE9EA}
-.act .q{position:absolute;right:4px;top:4px;width:22px;height:22px;border:1.5px solid #111;border-radius:50%;font-size:12px;display:flex;align-items:center;justify-content:center;background:#fff}
+.aw{grid-column:span 3;position:relative}.aw.e{grid-column:span 4}
+.act{width:100%;height:58px;position:relative;padding:0 18px;white-space:nowrap;border:2px solid #111;border-radius:14px;background:#fff;box-shadow:0 3px 0 #111;font-weight:900;font-size:18px}.act.e{background:#FFE9EA;font-size:17px}
+.q{position:absolute;right:-14px;top:-14px;width:44px;height:44px;border:0;background:none;padding:0;display:flex;align-items:center;justify-content:center;z-index:2}
+.q i{width:26px;height:26px;border:2px solid #111;border-radius:50%;font-size:14px;font-weight:900;font-style:normal;display:flex;align-items:center;justify-content:center;background:#fff}
+.acts{row-gap:16px;padding-top:6px}
 .act:active{transform:translateY(2px);box-shadow:0 1px 0 #111}
 .hint{margin-top:10px;background:#FFF7C2;border:2px solid #111;border-radius:14px;padding:8px 12px;font-weight:800;font-size:14px;min-height:20px}.hint[hidden]{display:none}
 .toast{position:fixed;left:50%;bottom:calc(var(--sab) + 28px);transform:translateX(-50%);background:#111;color:#fff;border-radius:999px;padding:8px 18px;font-weight:900;font-size:16px;z-index:30;opacity:0;transition:opacity 150ms}.toast.on{opacity:1}
@@ -64,7 +68,7 @@ body.on-stats #p-score{transform:translateX(-100%)}body.on-stats #p-stats{transf
 .prog{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}.prog b{width:36px;height:10px;border:2px solid #111;border-radius:5px;background:#fff}.prog b.ok{background:#1FAA59}.prog b.on{background:var(--our)}
 .sbtns{display:flex;gap:10px;margin-top:14px}.sbtns .btn{flex:1}
 /* messages */
-#v-msg{position:fixed;inset:0;z-index:60;background:var(--page);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:10px}#v-msg[hidden]{display:none}#v-msg h1{margin:0;font-size:28px;font-weight:900}#v-msg p{margin:0;font-weight:700;font-size:16px;max-width:520px}
+#v-msg{position:fixed;inset:0;z-index:60;background:var(--page);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:10px}#v-msg[hidden]{display:none}#v-msg .pill{top:calc(var(--sat) + 10px)}#v-msg h1{margin:0;font-size:28px;font-weight:900}#v-msg p{margin:0;font-weight:700;font-size:16px;max-width:520px}
 #v-rot{display:none}
 @media (orientation:portrait){#v-rot{position:fixed;inset:0;z-index:50;background:var(--page);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;font-weight:900;font-size:22px;padding:30px}#v-rot i{font-style:normal;font-size:60px}#v-rot small{font-size:15px;font-weight:700;color:#555}}
 </style></head><body>
@@ -75,8 +79,8 @@ body.on-stats #p-score{transform:translateX(-100%)}body.on-stats #p-stats{transf
   <div class="sc"><div class="card" id="cA"><div class="nm"></div><div class="pts"></div><div class="sets"></div></div>
     <div class="mid"><div class="box"><i>SET</i><b id="setno">1</b></div></div>
     <div class="card" id="cB"><div class="nm"></div><div class="pts"></div><div class="sets"></div></div></div>
-  <div class="foot" id="sfoot">🔒 Helper link · this match only · live score when online</div>
-  <button class="tab r dark" id="to-stats" aria-label="Go to Stats">›<br>Stats</button>
+  <div class="foot" id="sfoot" hidden>Live score when online</div>
+  <button class="tab r dark" id="to-stats" aria-label="Go to Stats"><svg class="chev" viewBox="0 0 10 16" width="9" height="14" aria-hidden="true"><path d="M2 2l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><br>Stats</button>
 </section>
 <section class="pg" id="p-stats" aria-label="Stats">
   <div class="pill">Stats</div><button class="setc" id="setc" aria-label="Set">Set 1 ⌄</button>
@@ -84,10 +88,10 @@ body.on-stats #p-score{transform:translateX(-100%)}body.on-stats #p-stats{transf
     <div class="court" id="court"><div class="net"><span>Net</span></div><div class="row" id="r1"></div><div class="row" id="r2"></div></div>
     <div class="bench" id="bench"></div>
     <div class="rc"><div class="tapc"><i aria-hidden="true">👆</i><b>Tap a player</b><s>then tap what they did</s></div>
-      <div class="saved"><b>✓ Saved on this phone</b><span class="c" id="cnt">0</span><small id="netst">offline ok</small></div>
-      <button class="btn" id="undo">↶ Undo last</button><button class="btn dark" id="send">Send stats ›</button></div>
+      <div class="saved"><b>✓ Saved on this phone</b><span class="c" id="cnt">0</span><small id="netst">Works offline</small></div>
+      <button class="btn" id="undo">↶ Undo last</button><button class="btn dark" id="send">Send stats <svg class="chev" viewBox="0 0 10 16" width="9" height="14" aria-hidden="true"><path d="M2 2l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
   </div>
-  <button class="tab l" id="to-score" aria-label="Go to Score">‹<br>Score</button>
+  <button class="tab l" id="to-score" aria-label="Go to Score"><svg class="chev" viewBox="0 0 10 16" width="9" height="14" aria-hidden="true"><path d="M8 2L2 8l6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><br>Score</button>
 </section>
 <div class="dots" id="dots"><b class="on"></b><b></b></div>
 <div class="scrim" id="pcs" hidden><div class="pc" role="dialog" aria-label="Player">
@@ -96,8 +100,8 @@ body.on-stats #p-score{transform:translateX(-100%)}body.on-stats #p-stats{transf
 <div class="toast" id="toast"></div>
 <section id="v-send" hidden aria-label="Send stats"><div class="qr" id="sqr"></div><div class="sd"><h2 id="sh">Send stats</h2><div class="l" id="sl"></div><div class="cd" id="scd"></div><div class="prog" id="sprog"></div>
   <small>Codes change by themselves every second.<br>Keep showing until the coach's phone says done.</small>
-  <div class="sbtns"><button class="btn" id="sbr">☀︎ Brighter</button><button class="btn" id="sback">‹ Stats</button></div></div></section>
-<div id="v-msg" hidden><h1 id="mh"></h1><p id="mp"></p><button class="btn dark" id="mb" hidden style="padding:0 22px;margin-top:10px">Send stats ›</button></div>
+  <div class="sbtns"><button class="btn" id="sbr">☀︎ Brighter</button><button class="btn" id="sback"><svg class="chev" viewBox="0 0 10 16" width="9" height="14" aria-hidden="true"><path d="M8 2L2 8l6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Stats</button></div></div></section>
+<div id="v-msg" hidden><div class="pill" id="mpill" style="position:fixed">Stats helper</div><h1 id="mh"></h1><p id="mp"></p><button class="btn pri" id="mb" hidden style="padding:0 22px;margin-top:10px">Send stats <svg class="chev" viewBox="0 0 10 16" width="9" height="14" aria-hidden="true"><path d="M2 2l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
 <div id="v-rot"><i>↻</i>Turn your phone sideways<small>The stats page is made for landscape.</small></div>
 <script>
 /* qrcode-generator 2.0.4 (c) Kazuhiko Arase, MIT. 'QR Code' is a registered trademark of DENSO WAVE INCORPORATED. */
@@ -277,18 +281,20 @@ function drawStats() {
 }
 function paintCount() {
   $('cnt').textContent = HC.liveCount(H.log); $('setc').textContent = 'Set ' + (H.log.set || 1) + ' ⌄';
-  $('netst').textContent = navigator.onLine === false ? 'offline ok' : 'offline ok · online now';
+  $('netst').textContent = navigator.onLine === false || !H.live ? 'Works offline' : 'Online · score in the corner';
   $('undo').disabled = !HC.liveCount(H.log);
 }
 function drawScore() {
+  if (H.start && H.log) followSet();
   const t = HC.theme(H.start), S = H.live, online = navigator.onLine !== false && !!S;
   [['A', H.start.a, t.our, t.ourInk], ['B', H.start.b, t.opp, t.oppInk]].forEach(([k, tm, c, ink]) => {
     const el = $('c' + k); el.style.background = c; el.style.color = ink; el.querySelector('.nm').textContent = '● ' + tm.n;
     const side = S && S.teams ? (S.teams.A && S.teams.A.name === tm.n ? S.teams.A : S.teams.B && S.teams.B.name === tm.n ? S.teams.B : (k === 'A' ? S.teams.A : S.teams.B)) : null;
-    el.querySelector('.pts').innerHTML = online && side ? (+side.points || 0) : '<span class="off">' + (navigator.onLine === false ? 'Offline: the score shows when you\'re back online.<br>Stats still save.' : 'Score shows here when the coach shares it live.') + '</span>';
-    el.querySelector('.pts').style.fontSize = online && side ? '' : '16px';
+    el.querySelector('.pts').innerHTML = online && side ? (+side.points || 0) : '<span class="off">' + (navigator.onLine === false ? 'Offline. The score shows when you\'re back online. Stats still save.' : 'Score shows here when the coach shares it live.') + '</span>';
+    el.querySelector('.pts').style.fontSize = online && side ? '' : '18px';
     el.querySelector('.sets').textContent = online && side ? 'Sets ' + (+side.sets || 0) : '';
   });
+  $('sfoot').hidden = navigator.onLine !== false;
   $('setno').textContent = online ? (+S.setNo || 1) : (H.log.set || 1);
   const m = $('mini');
   if (online && S.teams) { const a = S.teams.A || {}, b = S.teams.B || {};
@@ -307,7 +313,8 @@ function liveOn() {
   } catch (e) {}
 }
 function liveOff() { if (H.es) { H.es.close(); H.es = null; } drawScore(); }
-function followSet() { if (H.live && +H.live.setNo > 0 && +H.live.setNo !== H.log.set) { H.log.set = +H.live.setNo; save(); paintCount(); } }
+const liveSet = () => navigator.onLine !== false && H.live && +H.live.setNo > 0 ? +H.live.setNo : 0;
+function followSet() { const n = liveSet(); if (n && n !== H.log.set) { H.log.set = n; save(); paintCount(); const c = $('setc'); c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); clearTimeout(followSet.t); followSet.t = setTimeout(() => c.classList.remove('flash'), 1000); } }
 /* pages + swipe */
 function go(p) { H.page = p; document.body.classList.toggle('on-stats', p === 'stats'); [...$('dots').children].forEach((b, i) => b.classList.toggle('on', i === (p === 'stats' ? 1 : 0))); drawScore(); }
 (function swipe() {
@@ -321,7 +328,7 @@ function openCard(j) {
   if (expired()) { showExpired(); return; }
   H.sel = String(j); $('pcd').textContent = j; $('pct').textContent = '#' + j + (nameOf(j) ? ' ' + nameOf(j) : '') + ' · what happened?';
   $('pcs2').textContent = H.start.a.n + ' · Set ' + (H.log.set || 1);
-  $('acts').innerHTML = HC.CODES.map(c => `<button class="act${c.length > 1 ? ' e' : ''}" data-c="${c}">${{ K: 'KILL', A: 'ACE', B: 'BLOCK', D: 'DIG', SE: 'SERVE ERR', AE: 'ATTACK ERR', PE: 'PASS ERR' }[c]}<span class="q" data-q="${c}" role="button" aria-label="What is this?">?</span></button>`).join('');
+  $('acts').innerHTML = HC.CODES.map(c => `<div class="aw${c.length > 1 ? ' e' : ''}"><button class="act${c.length > 1 ? ' e' : ''}" data-c="${c}">${{ K: 'KILL', A: 'ACE', B: 'BLOCK', D: 'DIG', SE: 'SERVE ERR', AE: 'ATTACK ERR', PE: 'PASS ERR' }[c]}</button><button class="q" data-q="${c}" aria-label="What is ${HC.LABEL[c]}?"><i>?</i></button></div>`).join('');
   $('hint').hidden = true; $('pcs').hidden = false;
 }
 function closeCard() { $('pcs').hidden = true; H.sel = null; }
@@ -346,7 +353,7 @@ function tickSend() {
   H.fi++;
 }
 function closeSend() { clearInterval(H.sendT); $('v-send').hidden = true; try { H.wl && H.wl.release(); } catch (e) {} H.wl = null; if (expired()) showExpired(); }
-function showExpired() { msg('This helper link has ended', `Helper links end at midnight. Your ${HC.liveCount(H.log)} stats are still saved on this phone. Show them to the coach's phone:`, HC.liveCount(H.log) > 0); }
+function showExpired() { const n = HC.liveCount(H.log); msg('This helper link has ended', `Links end at midnight. Your ${n} stat${n === 1 ? ' is' : 's are'} still saved on this phone. Show them to the coach to add them.`, n > 0); }
 /* boot */
 function cleanup() { try { const now = Date.now(); for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (!/^vb\.help\./.test(k)) continue; try { const o = JSON.parse(localStorage.getItem(k)); if (!o || !o.start || now - o.start.x > 7 * 864e5) localStorage.removeItem(k); } catch (e) { localStorage.removeItem(k); } } } catch (e) {} }
 async function boot() {
@@ -369,7 +376,7 @@ async function boot() {
   $('undo').onclick = () => { const r = HC.undo(H.log); if (r) { save(); paintCount(); toast('Undone: #' + (r.removed || r.target)[2] + ' ' + HC.LABEL[(r.removed || r.target)[3]]); } };
   $('send').onclick = openSend; $('mb').onclick = openSend; $('sback').onclick = closeSend;
   $('sbr').onclick = () => $('v-send').classList.toggle('bright');
-  $('setc').onclick = () => { H.log.set = (H.log.set || 1) % 5 + 1; save(); paintCount(); };
+  $('setc').onclick = () => { if (liveSet()) { toast('Set follows the live score'); return; } H.log.set = (H.log.set || 1) % 5 + 1; save(); paintCount(); };
   addEventListener('online', () => { paintCount(); liveOn(); drawScore(); }); addEventListener('offline', () => { paintCount(); liveOff(); });
   addEventListener('hashchange', () => location.reload());
   setInterval(() => { if (expired() && $('v-send').hidden && $('v-msg').hidden) showExpired(); }, 30000);
