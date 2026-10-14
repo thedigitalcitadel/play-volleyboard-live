@@ -89,7 +89,7 @@ body.on-stats #p-score{transform:translateX(-100%)}body.on-stats #p-stats{transf
     <div class="bench" id="bench"></div>
     <div class="rc"><div class="tapc"><i aria-hidden="true">👆</i><b>Tap a player</b><s>then tap what they did</s></div>
       <div class="saved"><b>✓ Saved on this phone</b><span class="c" id="cnt">0</span><small id="netst">Works offline</small></div>
-      <button class="btn" id="undo">↶ Undo last</button><button class="btn dark" id="send">Send stats <svg class="chev" viewBox="0 0 10 16" width="9" height="14" aria-hidden="true"><path d="M2 2l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+      <button class="btn" id="undo">↶ Undo last</button><button class="btn dark" id="send">Match over · send stats <svg class="chev" viewBox="0 0 10 16" width="9" height="14" aria-hidden="true"><path d="M2 2l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
   </div>
   <button class="tab l" id="to-score" aria-label="Go to Score"><svg class="chev" viewBox="0 0 10 16" width="9" height="14" aria-hidden="true"><path d="M8 2L2 8l6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><br>Score</button>
 </section>
@@ -100,7 +100,7 @@ body.on-stats #p-score{transform:translateX(-100%)}body.on-stats #p-stats{transf
 <div class="toast" id="toast"></div>
 <section id="v-send" hidden aria-label="Send stats"><div class="qr" id="sqr"></div><div class="sd"><h2 id="sh">Send stats</h2><div class="l" id="sl"></div><div class="cd" id="scd"></div><div class="prog" id="sprog"></div>
   <small>Codes change by themselves every second.<br>Keep showing until the coach's phone says done.</small>
-  <div class="sbtns"><button class="btn" id="sbr">☀︎ Brighter</button><button class="btn" id="sback"><svg class="chev" viewBox="0 0 10 16" width="9" height="14" aria-hidden="true"><path d="M8 2L2 8l6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Stats</button></div></div></section>
+  <div class="sbtns"><button class="btn pri" id="sgot">Coach got it ✓</button><button class="btn" id="sbr">☀︎ Brighter</button><button class="btn" id="sback"><svg class="chev" viewBox="0 0 10 16" width="9" height="14" aria-hidden="true"><path d="M8 2L2 8l6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Stats</button></div></div></section>
 <div id="v-msg" hidden><div class="pill" id="mpill" style="position:fixed">Stats helper</div><h1 id="mh"></h1><p id="mp"></p><button class="btn pri" id="mb" hidden style="padding:0 22px;margin-top:10px">Send stats <svg class="chev" viewBox="0 0 10 16" width="9" height="14" aria-hidden="true"><path d="M2 2l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
 <div id="v-rot"><i>↻</i>Turn your phone sideways<small>The stats page is made for landscape.</small></div>
 <script>
@@ -344,8 +344,9 @@ function tapCode(c) {
 async function openSend() {
   closeCard(); H.frames = await HC.frames(H.log); H.fi = 0; HC.markSent(H.log); save();
   const n = HC.liveCount(H.log);
-  $('sh').textContent = expired() ? 'Link ended · send your stats' : 'Send stats';
-  $('sl').textContent = `${n} stat${n === 1 ? '' : 's'} saved · hold this up to the coach's phone`;
+  $('sh').textContent = 'Match over · Show this to the coach';
+  $('sl').innerHTML = `<b>● Saved on this phone · ${n}</b><br>The code keeps looping. Hold still. Clears at midnight.`;
+  $('v-send').classList.add('bright');
   $('v-send').hidden = false; $('v-msg').hidden = true; tickSend(); clearInterval(H.sendT); H.sendT = setInterval(tickSend, 1000);
   try { if (navigator.wakeLock) H.wl = await navigator.wakeLock.request('screen'); } catch (e) {}
 }
@@ -356,7 +357,11 @@ function tickSend() {
   H.fi++;
 }
 function closeSend() { clearInterval(H.sendT); $('v-send').hidden = true; try { H.wl && H.wl.release(); } catch (e) {} H.wl = null; if (expired()) showExpired(); }
-function showExpired() { const n = HC.liveCount(H.log); msg('This helper link has ended', `Links end at midnight. Your ${n} stat${n === 1 ? ' is' : 's are'} still saved on this phone. Show them to the coach to add them.`, n > 0); }
+function showExpired() { clearMidnight(); msg('This helper link has ended', 'Helper stats clear at midnight on this phone. Ask the coach for a new code for the next match.', false); }
+/* v1.20.3: helper data clears at local midnight (the link's expiry), even if Coach got it was never tapped */
+function clearMidnight() { if (!H.start || !expired()) return; try { localStorage.removeItem(H.key); } catch (e) {} H.log = HC.newLog(H.start); H.log.cleared = 1; try { paintCount(); } catch (e) {} }
+function coachGot() { clearInterval(H.sendT); $('v-send').hidden = true; try { H.wl && H.wl.release(); } catch (e) {} H.wl = null; H.log.got = Date.now(); save();
+  msg('Sent to the coach', `${HC.liveCount(H.log)} stats · ${H.start.n}. Your copy stays on this phone until midnight in case the coach needs it again.`, true); $('mh').textContent = '✓ Sent to the coach'; $('mb').firstChild.textContent = 'Show the code again '; }
 /* boot */
 function cleanup() { try { const now = Date.now(); for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (!/^vb\.help\./.test(k)) continue; try { const o = JSON.parse(localStorage.getItem(k)); if (!o || !o.start || now - o.start.x > 7 * 864e5) localStorage.removeItem(k); } catch (e) { localStorage.removeItem(k); } } } catch (e) {} }
 async function boot() {
@@ -368,7 +373,7 @@ async function boot() {
   if (!H.log) { H.log = HC.newLog(st); save(); }
   theme(); document.title = 'Stats helper · ' + st.n;
   drawStats(); drawScore();
-  if (expired()) showExpired();
+  if (expired()) { clearMidnight(); showExpired(); }
   $('to-stats').onclick = () => go('stats'); $('to-score').onclick = () => go('score');
   document.addEventListener('click', e => {
     const q = e.target.closest('[data-q]'); if (q) { e.stopPropagation(); const h = $('hint'); h.hidden = false; h.innerHTML = '<b>?</b> ' + esc(HINT[q.dataset.q]); return; }
@@ -378,7 +383,7 @@ async function boot() {
   $('pcx').onclick = closeCard; $('pcs').addEventListener('click', e => { if (e.target === $('pcs')) closeCard(); });
   $('undo').onclick = () => { const r = HC.undo(H.log); if (r) { save(); paintCount(); toast('Undone: #' + (r.removed || r.target)[2] + ' ' + HC.LABEL[(r.removed || r.target)[3]]); } };
   $('send').onclick = openSend; $('mb').onclick = openSend; $('sback').onclick = closeSend;
-  $('sbr').onclick = () => $('v-send').classList.toggle('bright');
+  $('sbr').onclick = () => $('v-send').classList.toggle('bright'); $('sgot').onclick = coachGot;
   $('setc').onclick = () => { if (liveSet()) { toast('Set follows the live score', { bench: true, ms: 1500 }); return; } H.log.set = (H.log.set || 1) % 5 + 1; save(); paintCount(); };
   addEventListener('online', () => { paintCount(); liveOn(); drawScore(); }); addEventListener('offline', () => { paintCount(); liveOff(); });
   addEventListener('hashchange', () => location.reload());
