@@ -59,7 +59,7 @@ body.on-stats #p-score{transform:translateX(-100%)}body.on-stats #p-stats{transf
 .acts{row-gap:16px;padding-top:6px}
 .act:active{transform:translateY(2px);box-shadow:0 1px 0 #111}
 .hint{margin-top:10px;background:#FFF7C2;border:2px solid #111;border-radius:14px;padding:8px 12px;font-weight:800;font-size:14px;min-height:20px}.hint[hidden]{display:none}
-.toast{position:fixed;left:50%;bottom:calc(var(--sab) + 28px);transform:translateX(-50%);background:#111;color:#fff;border-radius:999px;padding:8px 18px;font-weight:900;font-size:16px;z-index:30;opacity:0;transition:opacity 150ms}.toast.on{opacity:1}
+.toast{position:fixed;left:50%;bottom:calc(var(--sab) + 28px);transform:translateX(-50%);background:#111;color:#fff;border-radius:999px;padding:8px 18px;font-weight:900;font-size:16px;z-index:30;opacity:0;transition:opacity 150ms}.toast.on{opacity:1}.toast.bt{background:#111;opacity:0;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.25);transition:opacity 300ms}.toast.bt.on{opacity:1}
 /* send */
 #v-send{position:fixed;inset:0;background:var(--page);z-index:40;display:flex;align-items:center;justify-content:center;gap:28px;padding:calc(var(--sat) + 10px) calc(var(--sar) + 16px) calc(var(--sab) + 10px) calc(var(--sal) + 16px)}#v-send[hidden]{display:none}
 #v-send.bright{background:#fff}
@@ -263,7 +263,10 @@ function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return n
 function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
 function save() { lsSet(H.key, JSON.stringify(H.log)); }
 function msg(h, p, send) { $('v-msg').hidden = false; $('mh').textContent = h; $('mp').textContent = p; $('mb').hidden = !send; }
-function toast(t) { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 1800); }
+function toast(t, o) {                                                             // o.bench: solid pill just above the bench (GAD N1), o.ms: how long it shows
+  o = o || {}; const e = $('toast'); e.textContent = t; e.classList.toggle('bt', !!o.bench); e.style.top = ''; e.style.bottom = '';
+  if (o.bench) { const b = $('bench').getBoundingClientRect(); if (b.height) { e.style.bottom = 'auto'; e.style.top = Math.max(8, b.top - e.offsetHeight - 8) + 'px'; } }
+  e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), o.ms || 1800); }
 const expired = () => HC.expired(H.start);
 function theme() {
   const t = HC.theme(H.start), r = document.documentElement.style;
@@ -376,7 +379,7 @@ async function boot() {
   $('undo').onclick = () => { const r = HC.undo(H.log); if (r) { save(); paintCount(); toast('Undone: #' + (r.removed || r.target)[2] + ' ' + HC.LABEL[(r.removed || r.target)[3]]); } };
   $('send').onclick = openSend; $('mb').onclick = openSend; $('sback').onclick = closeSend;
   $('sbr').onclick = () => $('v-send').classList.toggle('bright');
-  $('setc').onclick = () => { if (liveSet()) { toast('Set follows the live score'); return; } H.log.set = (H.log.set || 1) % 5 + 1; save(); paintCount(); };
+  $('setc').onclick = () => { if (liveSet()) { toast('Set follows the live score', { bench: true, ms: 1500 }); return; } H.log.set = (H.log.set || 1) % 5 + 1; save(); paintCount(); };
   addEventListener('online', () => { paintCount(); liveOn(); drawScore(); }); addEventListener('offline', () => { paintCount(); liveOff(); });
   addEventListener('hashchange', () => location.reload());
   setInterval(() => { if (expired() && $('v-send').hidden && $('v-msg').hidden) showExpired(); }, 30000);
