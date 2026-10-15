@@ -345,7 +345,7 @@ async function openSend() {
   closeCard(); H.frames = await HC.frames(H.log); H.fi = 0; HC.markSent(H.log); save();
   const n = HC.liveCount(H.log);
   $('sh').textContent = 'Match over · Show this to the coach';
-  $('sl').innerHTML = `<b>● Saved on this phone · ${n}</b><br>The code keeps looping. Hold still. Clears at midnight.`;
+  $('sl').innerHTML = `<b>● Saved on this phone · ${n}</b><br>The main phone asks for this code at match end.<br>The code keeps looping. Hold still. Clears at midnight.`;
   $('v-send').classList.add('bright');
   $('v-send').hidden = false; $('v-msg').hidden = true; tickSend(); clearInterval(H.sendT); H.sendT = setInterval(tickSend, 1000);
   try { if (navigator.wakeLock) H.wl = await navigator.wakeLock.request('screen'); } catch (e) {}
