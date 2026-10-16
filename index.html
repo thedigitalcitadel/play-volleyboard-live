@@ -175,6 +175,8 @@ body{font-family:Nunito,system-ui,sans-serif;background:#E8E8EC;color:#111;min-h
 /* compact scorebug when the crowd zone is on (mockup sizes), so everything fits a 390x844 screen */
 .main.rxon .bug{padding:10px}.main.rxon .hdr{padding:0 6px 6px}.main.rxon .row{padding:6px 8px}.main.rxon .pts{font-size:64px;min-width:84px}.main.rxon .chips{padding:6px 4px 0}
 .main.rxon .badge{width:42px;height:42px}.main.rxon .nm b{font-size:22px}
+@media (max-width:699px){.nm b,.main.rxon .nm b{white-space:normal;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow-wrap:break-word;line-height:1.08;font-size:clamp(17px,5.2vw,22px)}}
+.nxt{margin:6px auto 0;max-width:520px;text-align:center;font:800 15px Nunito,system-ui,sans-serif;color:#374151}
 .main.fin.rxon .wcard{padding:8px}.main.fin.rxon .crown{font-size:18px}.main.fin.rxon .wteam{margin:4px 0;padding:4px 16px;font-size:22px}.main.fin.rxon .cnote.rxn{display:none}
 .main.rxon .cheer button{height:46px;font-size:16px}
 .rm .fl{display:none}
@@ -193,7 +195,9 @@ const DB = window.PVB_DB || 'https://play-volleyboard-default-rtdb.firebaseio.co
 const KEY = 'AIzaSyBe5-zGvB85qsm_Z5jAV2bnIAxc9Y6ush0';
 const IDT = window.PVB_IDT || 'https://identitytoolkit.googleapis.com', STK = window.PVB_STK || 'https://securetoken.googleapis.com', QX = window.PVB_Q || '';   // test hooks (emulator)
 const $ = id => document.getElementById(id);
-const g = new URLSearchParams(location.search).get('g') || '';
+const QS = new URLSearchParams(location.search);
+const D = /^d[a-z0-9]{8,23}$/.test(QS.get('d') || '') ? QS.get('d') : '';   // ?d=<dayId>: one link per team per day; follows /day/<dayId>.cur
+const g = QS.get('g') || '';
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
 const hex = v => /^#[0-9A-Fa-f]{6}$/.test(v || '') ? v : null;
 const txt = (v, n) => String(v == null ? '' : v).slice(0, n || 40);
@@ -222,7 +226,7 @@ function say(m) { if (m && m !== lastSay) { lastSay = m; $('say').textContent = 
 const badge = t => `<div class="bwrap"><div class="badge" style="background:${t.c};color:${t.i}">${esc(t.ini)}</div><span class="sv" role="img" aria-label="serving"></span></div>`;
 function row(t, cls) {
   const d = Array.from({ length: NEED }, (_, i) => `<i class="${t.sets > i ? 'f' : ''}"></i>`).join('');
-  return `<div class="row ${cls || ''}" id="r${t.k}"><div class="edge" style="background:${t.c}"></div>${badge(t)}<div class="nm"><b>${esc(t.n)}</b><div class="sd" aria-label="${t.sets} set${t.sets === 1 ? '' : 's'} won">${d}${CH.tot[t.k] ? `<span class="chr" aria-label="${CH.tot[t.k]} cheers">👏 ${CH.tot[t.k]}</span>` : ''}</div></div><div class="pts" id="p${t.k}">${t.pts}</div></div>`;
+  return `<div class="row ${cls || ''}" id="r${t.k}"><div class="edge" style="background:${t.c}"></div>${badge(t)}<div class="nm"><b>${esc(t.n)}</b><div class="sd" aria-label="${t.sets} set${t.sets === 1 ? '' : 's'} won">${d}${CH.tot[t.k] && !(S && S.status === 'ended') ? `<span class="chr" aria-label="${CH.tot[t.k]} cheers">👏 ${CH.tot[t.k]}</span>` : ''}</div></div><div class="pts" id="p${t.k}">${t.pts}</div></div>`;
 }
 const chipsH = () => (Array.isArray(S.sets) ? S.sets : []).slice(0, 5).map((s, i) => `<span>Set ${i + 1} · ${+s.A || 0}–${+s.B || 0}</span>`).join('');
 function updLine() {
@@ -259,7 +263,7 @@ function render() {
     const draw = A.sets === B.sets;
     m.className = 'main fin';
     m.innerHTML = `<div class="col side">${draw ? '' : `<div class="wcard ${motion && !ended ? 'drop' : ''}"><div class="crown">★ WINNER ★</div><div class="wteam" style="background:${W.c};color:${W.i}">${esc(W.n)}</div><div style="font-weight:900;font-size:18px">wins ${W.sets} set${W.sets === 1 ? '' : 's'} to ${L.sets}</div></div>`}
-      <div class="bugw"><div class="bug"><div class="hdr"><span>FINAL</span><span>${fin}</span></div>${row(A, draw ? '' : A === W ? 'win' : 'lose')}<div class="div"></div>${row(B, draw ? '' : B === W ? 'win' : 'lose')}<div class="chips">${chipsH()}</div></div></div>
+      <div class="bugw"><div class="bug"><div class="hdr"><span>FINAL</span><span>${fin}</span></div>${row(A, draw ? '' : A === W ? 'win' : 'lose')}<div class="div"></div>${row(B, draw ? '' : B === W ? 'win' : 'lose')}<div class="chips">${chipsH()}</div></div>${D ? '<p class="nxt" id="nxt">Next match shows here automatically. Keep this page open.</p>' : ''}</div>
       ${rxOn() ? `<div id="czslot"></div><div class="rxp">${rxPanel(A, B, true)}</div>` : '<div class="savew" style="text-align:center"><button class="btn" id="save">Save final score image</button></div>'}</div>`;
     m.classList.toggle('rxon', rxOn()); placeCrowd(); wireRx();
     $('save').onclick = () => shareCard(A, B, W, L, draw);
@@ -411,7 +415,7 @@ function tickRx() {
 setInterval(tickRx, 200);
 setInterval(() => { if (S && S.status === 'ended' && document.querySelector('.rxon') && !rxOn()) render(); }, 15000);   // close 10 min after the match
 function setNote(t) { RX.note = t; const n = $('rxn'); if (n) n.firstChild.textContent = t + ' · '; }
-const limNote = () => setNote(RX.rn >= RX_MAX || RX.pn >= PH_MAX ? "That's the max for this match. Thanks for cheering!" : 'Nice! Reactions: 1 per 2 s · phrases: 1 per 15 s');
+const limNote = () => setNote(RX.rn >= RX_MAX || RX.pn >= PH_MAX ? "That's the max for this match. Thanks for cheering!" : 'Thanks! You can send another in a moment.');
 /* ---- display ---- */
 const FL = [], GR = {}, ARR = {}, TAL = [];
 function zoneH() { return CZ.clientHeight || 120; }
@@ -547,7 +551,18 @@ function setPath(path, data) {
   for (let i = 0; i < ks.length - 1; i++) { o[ks[i]] = o[ks[i]] && typeof o[ks[i]] === 'object' ? o[ks[i]] : {}; o = o[ks[i]]; }
   if (data === null) delete o[ks[ks.length - 1]]; else o[ks[ks.length - 1]] = data;
 }
+function follow() {   // day link: watch the pointer; a new match id reloads onto it (old ids keep their own data paths)
+  if (!D) return false;
+  const go = cur => { if (typeof cur === 'string' && /^[a-z0-9]{6,32}$/.test(cur) && cur !== g) location.replace(location.pathname + '?d=' + D + '&g=' + cur); };
+  try { const es = new EventSource(`${DB}/day/${D}.json${QX ? '?' + QX.slice(1) : ''}`); const P = {};
+    es.addEventListener('put', e => { try { const d = JSON.parse(e.data); if (d.path === '/') Object.assign(P, d.data || {}); else P[d.path.replace(/^\//, '')] = d.data; go(P.cur); } catch (x) {} });
+    es.addEventListener('patch', e => { try { const d = JSON.parse(e.data); Object.assign(P, d.data || {}); go(P.cur); } catch (x) {} });
+    es.onerror = () => {};
+  } catch (e) {}
+  return true;
+}
 function start() {
+  if (follow() && !g) { render(); return; }   // day link before the first match is published: MATCH STARTING SOON
   if (!/^[a-z0-9]{6,32}$/.test(g)) { $('main').innerHTML = '<p class="msg">This link is missing its game code.</p>'; return; }
   render();
   const es = new EventSource(`${DB}/live/${g}.json${QX ? '?' + QX.slice(1) : ''}`);
@@ -557,7 +572,7 @@ function start() {
   watchCheers(); watchRx();
 }
 setInterval(() => { const u = $('upd'); if (u && S && S.status === 'live' && !setPoint(...teams())) u.textContent = updLine(); }, 5000);
-window.PVBLive = { feed: d => { S = d; render(); }, state: () => S, rx: () => RX };   // test hook (local)
+window.PVBLive = { feed: d => { S = d; render(); }, state: () => S, rx: () => RX, day: () => D, game: () => g };   // test hook (local)
 start();
 /* house ad routing: iPhone/iPad (incl. iPadOS desktop-mode Safari = Mac + touch) → App Store, Android → Google Play, else the get page */
 (() => { const ua = navigator.userAgent, a = $('house-ad');
