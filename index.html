@@ -257,14 +257,40 @@ body{font-family:Nunito,system-ui,sans-serif;background:#E8E8EC;color:#111;min-h
 }
 @media (min-width:700px) and (max-height:500px){.main.fin .hero{padding:5px 10px}.main.fin .bug .pts{font-size:44px}.main.fin.rxon .hero .ws{font-size:14px}.acts button{height:46px}}
 @media (prefers-reduced-motion:reduce){#mb{display:none}.hero.pop,.main.fin .bugw,.main.fin .acts{animation:fade .15s both!important}}
+
+/* ---------- pass-it-on Share + QR (GAD live-share-qr spec) ---------- */
+.tr{display:flex;gap:8px;align-items:center;flex:none}
+.shb{height:44px;min-width:44px;padding:0 14px;border-radius:99px;border:3px solid #111;background:#fff;color:#111;font:900 15px Nunito;display:flex;align-items:center;gap:6px;box-shadow:0 3px 0 #111;cursor:pointer;-webkit-touch-callout:none;user-select:none}
+.shb svg{width:18px;height:18px}
+@media (max-width:699px){.brand{font-size:14px;gap:6px}.brand .ball{width:20px;height:20px}}
+.qv{position:fixed;inset:0;z-index:80;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;overflow:auto;animation:qin .18s var(--snap) both}
+@keyframes qin{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.qv .x{white-space:nowrap;z-index:2;position:absolute;top:max(12px,env(safe-area-inset-top));right:12px;height:48px;padding:0 16px;border-radius:99px;background:#111;color:#fff;border:0;font:900 17px Nunito;cursor:pointer}
+.qv .ttl{font:900 italic 18px Orbitron;color:#C8102E}
+.qv .tm{font-weight:1000;font-size:22px;text-align:center;line-height:1.15;max-width:340px;overflow-wrap:anywhere}
+.qv .tm i{font-style:normal;color:#444;font-size:16px;font-weight:900;display:block}
+.qbox{background:#fff;padding:24px;border:3px solid #111;border-radius:18px;flex:none}
+.qbox img{display:block;image-rendering:pixelated;width:300px;height:300px}
+.lbl{font-weight:900;font-size:15px;background:#111;color:#fff;border-radius:99px;padding:5px 14px}
+.lbl.g{background:#fff;color:#111;border:2px solid #111}
+.url{font-weight:800;font-size:15px;color:#111;word-break:break-all;text-align:center;max-width:340px}
+.hint{font-size:13px;font-weight:800;color:#333;text-align:center}
+.qa{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.qa button{height:48px;padding:0 16px;border-radius:14px;border:3px solid #111;background:#fff;color:#111;font:900 16px Nunito;cursor:pointer}
+.qcol{display:flex;flex-direction:column;gap:10px;align-items:center}
+@media (orientation:landscape) and (max-height:600px){.qv{flex-direction:row;gap:28px}.qcol{align-items:flex-start;max-width:400px}.qbox{padding:16px}.qbox img{width:336px;height:336px}.qv .tm,.qv .url,.qv .hint{text-align:left}.qa{justify-content:flex-start}}
+@media (orientation:landscape) and (max-height:420px){.qbox img{width:300px;height:300px}}
+.dash{border:3px dashed #111;border-radius:12px;padding:10px;font-weight:800;word-break:break-all;background:#fff}
+.lnk{position:fixed;left:50%;top:max(16px,env(safe-area-inset-top));transform:translateX(-50%);z-index:95;background:#111;color:#fff;border-radius:99px;padding:10px 18px;font:900 16px Nunito;box-shadow:0 4px 0 #FF3E00;animation:tin .18s var(--snap)}
+@media (prefers-reduced-motion:reduce){.qv{animation:fade .12s both!important}}
 </style></head><body><div class="bgfx"></div>
 <div id="conf"></div>
-<div class="wrap"><div class="top"><div class="brand"><div class="ball"></div>VOLLEYBOARD</div><div class="pill lt" id="tag">…</div></div>
+<div class="wrap"><div class="top"><div class="brand"><div class="ball"></div>VOLLEYBOARD</div><div class="tr"><button class="shb" id="shb" aria-label="Share this live score: show QR code" aria-haspopup="dialog"><svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#111" d="M1 1h7v7H1zM3 3v3h3V3zM10 1h7v7h-7zm2 2v3h3V3zM1 10h7v7H1zm2 2v3h3v-3zM10 10h3v3h-3zM14 14h3v3h-3zM14 10h3v2h-3zM10 14h2v3h-2z"/></svg>Share</button><div class="pill lt" id="tag">…</div></div></div>
 <div class="main" id="main"></div></div>
 <div id="say" class="sr" aria-live="polite"></div>
 <div id="sheetw"></div>
 <div class="foot"><button class="about" id="about" aria-haspopup="dialog">About · More from The Digital Citadel</button></div>
-<div id="aboutw"></div>
+<div id="aboutw"></div><div id="qvw"></div>
+<script src="qrcode.min.js"></script>
 <script>
 'use strict';
 const DB = window.PVB_DB || 'https://play-volleyboard-default-rtdb.firebaseio.com';
@@ -734,6 +760,57 @@ function start() {
 setInterval(() => { const u = $('upd'); if (u && S && S.status === 'live' && !setPoint(...teams())) u.textContent = updLine(); }, 5000);
 window.PVBLive = { card: () => window.__lastCard, feed: d => { S = d; render(); }, state: () => S, rx: () => RX, day: () => D, game: () => g };   // test hook (local)
 start();
+
+/* ---------- pass-it-on Share + QR (live score page only; never an app download QR). Generated here, offline. ---------- */
+const PUB_BASE = 'https://videogamesprof.github.io/play-volleyboard-live/';
+const shareUrl = () => PUB_BASE + (D ? '?d=' + D : '?g=' + encodeURIComponent(g));   // only d or g: no tracking params
+const shortUrl = u => u.replace(/^https?:\/\//, '');
+const lblH = () => D ? '<span class="lbl">📅 Follows today\'s matches</span>' : '<span class="lbl g">This match only</span>';
+let WL = null, qOpen = false;
+async function wake() { try { if (navigator.wakeLock && document.visibilityState === 'visible') WL = await navigator.wakeLock.request('screen'); } catch (e) {} }
+function unwake() { try { if (WL) WL.release(); } catch (e) {} WL = null; }
+document.addEventListener('visibilitychange', () => { if (qOpen && document.visibilityState === 'visible') wake(); });
+function qrImg(u) { const q = qrcode(0, 'M'); q.addData(u); q.make(); return q.createDataURL(8, 0); }
+function openQR() {
+  if (qOpen) return; closeShareSheet(); qOpen = true; const u = shareUrl(), [A, B] = teams(), named = S && S.teams && S.teams.A && S.teams.A.name;
+  $('qvw').innerHTML = `<div class="qv" id="qv" role="dialog" aria-modal="true" aria-label="QR code for the live score"><button class="x" id="qx">✕ Close</button>
+    <div class="qcol"><div class="ttl">SCAN FOR THE LIVE SCORE</div><div class="qbox"><img id="qimg" src="${qrImg(u)}" alt="QR code for ${esc(u)}"></div></div>
+    <div class="qcol"><div class="tm">${named ? `${esc(A.n)} vs ${esc(B.n)}` : 'Volleyboard live score'}<i>Live score · no app needed</i></div>${lblH()}<div class="url">${esc(shortUrl(u))}</div>
+    <div class="hint">☀️ Turn your brightness up · screen stays on while open</div><div class="qa">${navigator.share ? '<button id="qsh">⤴ Share link</button>' : ''}<button id="qcp">Copy link</button></div></div></div>`;
+  document.querySelector('.wrap').setAttribute('aria-hidden', 'true'); CZ.style.visibility = 'hidden';
+  $('qx').onclick = () => closeQR(); $('qx').focus(); if ($('qsh')) $('qsh').onclick = nativeShare; $('qcp').onclick = e => copyLink(e.currentTarget);
+  try { history.pushState({ pvbqr: 1 }, ''); } catch (e) {}
+  addEventListener('keydown', qKey); wake();
+}
+function closeQR(fromPop) {
+  if (!qOpen) return; qOpen = false; $('qvw').innerHTML = ''; removeEventListener('keydown', qKey); unwake();
+  document.querySelector('.wrap').removeAttribute('aria-hidden'); CZ.style.visibility = '';
+  if (!fromPop && history.state && history.state.pvbqr) try { history.back(); } catch (e) {}
+  $('shb').focus({ preventScroll: true });
+}
+function qKey(e) { if (e.key === 'Escape') closeQR(); }
+addEventListener('popstate', () => { if (qOpen) closeQR(true); });
+async function nativeShare() { try { await navigator.share({ title: 'Volleyboard live score', url: shareUrl() }); } catch (e) {} }
+async function copyLink(btn) {
+  const u = shareUrl(); let ok = false;
+  try { await navigator.clipboard.writeText(u); ok = true; } catch (e) {}
+  if (!ok) { const t = document.createElement('textarea'); t.value = u; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(t); t.select(); try { ok = document.execCommand('copy'); } catch (e) {} t.remove(); }
+  if (btn) { const o = btn.textContent; btn.textContent = ok ? 'Copied ✓' : 'Copy failed'; setTimeout(() => { btn.textContent = o; }, 2000); }
+  if (ok) { const old = document.querySelector('.lnk'); if (old) old.remove(); const d = document.createElement('div'); d.className = 'lnk'; d.setAttribute('role', 'status'); d.textContent = '✓ Link copied'; document.body.appendChild(d); setTimeout(() => d.remove(), 2000); }
+}
+function openShareSheet() {
+  if (qOpen) return; const u = shareUrl();
+  msheet('SHARE LIVE SCORE', `<div class="bd">${lblH()}<div class="dash">${esc(u)}</div><button class="bb" id="sqr">Show QR code</button>${navigator.share ? '<button class="bb pri" id="ssh">⤴ Share link…</button>' : ''}<button class="bb${navigator.share ? '' : ' pri'}" id="scp">Copy link</button></div>`);
+  document.querySelector('.msh .lbl') && (document.querySelector('.msh .lbl').style.alignSelf = 'flex-start');
+  $('sqr').onclick = () => { closeMs(); openQR(); }; if ($('ssh')) $('ssh').onclick = nativeShare; $('scp').onclick = e => copyLink(e.currentTarget);
+}
+function closeShareSheet() { if ($('sqr')) closeMs(); }
+{ const b = $('shb'); let lt = null, long = false;
+  b.addEventListener('pointerdown', () => { long = false; lt = setTimeout(() => { long = true; openShareSheet(); }, 550); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(k => b.addEventListener(k, () => clearTimeout(lt)));
+  b.addEventListener('contextmenu', e => { e.preventDefault(); if (!long) { long = true; openShareSheet(); } });
+  b.addEventListener('click', () => { if (long) { long = false; return; } openQR(); }); }
+window.PVBShare = { url: shareUrl, open: openQR, sheet: openShareSheet, close: closeQR };
 /* ---------- About sheet (static, first-party, never opens by itself) ---------- */
 const ST_URL = (() => { const ua = navigator.userAgent;
   if (/Android/i.test(ua)) return 'https://play.google.com/store/apps/details?id=com.thedigitalcitadel.sleeptrain';
