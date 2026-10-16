@@ -2,78 +2,297 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
-<title>Play Volleyboard · Live score</title>
-<!-- Read-only viewer for /live/<id> (Firebase Realtime Database REST streaming). No SDK, no ad network, no tracking: the sponsor slot is a static house ad. -->
+<title>Volleyboard · Live score</title>
+<!-- Read-only viewer for /live/<id> (Firebase Realtime Database REST streaming). No SDK, no ad network, no tracking: the sponsor slot is a static house ad.
+     v2 (2026-10-16): "moments" design: waiting card, scorebug, set point, set won, match over, share image, cheers (page only). -->
 <style>
-:root{--page:#E5E7EB;--acc:#FF3E00}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#111;background:var(--page)}
-main{min-height:100%;display:flex;flex-direction:column;gap:14px;padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));max-width:1100px;margin:0 auto}
-header{display:flex;align-items:center;gap:12px;border-bottom:5px solid var(--acc);padding-bottom:10px}
-header h1{margin:0;font-size:22px;font-weight:900;flex:1}
-.tag{font-weight:900;font-size:18px;padding:6px 14px;border-radius:999px;border:3px solid #111;background:#fff}
-.tag.live{background:#E8002D;color:#fff}.tag.live::before{content:'● '}
-.board{display:flex;gap:12px;flex:1;min-height:52vh}
-.half{flex:1;border:4px solid #111;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:6px;position:relative;min-width:0}
-.half .nm{font-size:clamp(20px,4vw,36px);font-weight:900;text-align:center;overflow-wrap:anywhere}
-.half .pts{font-size:clamp(90px,22vw,240px);font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
-.half .meta{font-size:clamp(16px,2.6vw,24px);font-weight:800;display:flex;gap:14px;align-items:center}
-.pips{display:flex;gap:6px}.pips i{width:14px;height:14px;border-radius:50%;border:2px solid currentColor}.pips i.u{background:currentColor}
-.srv{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:50%;background:#FFE600;border:3px solid #111;display:none}
-.half.s .srv{display:block}
-.info{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:18px;font-weight:800}
-.sets{display:flex;gap:10px}.sets span{background:#fff;border:2px solid #111;border-radius:10px;padding:2px 10px}
-.sponsor{display:flex;justify-content:center}
-.house-ad{display:block;line-height:0;border-radius:10px;overflow:hidden}
-.house-ad img{display:block;width:320px;height:50px;max-width:100%}
-@media (min-width:760px){.house-ad{border-radius:16px}.house-ad img{width:728px;height:90px}}
-.msg{font-size:22px;font-weight:800;text-align:center;margin:40px 0}
-@media (orientation:portrait){.board{flex-direction:column}}
-</style></head><body><main>
-<header><h1 id="title">Live score</h1><span class="tag" id="tag">…</span></header>
-<div id="msg" class="msg" hidden></div>
-<section class="board" id="board" hidden>
-  <div class="half" id="hA"><span class="srv"></span><div class="nm"></div><div class="pts">0</div><div class="meta"><span class="st"></span><span class="pips"></span></div></div>
-  <div class="half" id="hB"><span class="srv"></span><div class="nm"></div><div class="pts">0</div><div class="meta"><span class="st"></span><span class="pips"></span></div></div>
-</section>
-<div class="info" id="info" hidden><span id="setno"></span><span class="sets" id="sets"></span><span id="upd"></span></div>
-<aside class="sponsor" aria-label="Sponsor"><a class="house-ad" id="house-ad" href="get/sleep-train/" rel="noopener" target="_blank" aria-label="Ad: Sleep Train">
-  <picture>
-    <source media="(min-width: 760px)" srcset="ads/sleeptrain_728x90.png 1x, ads/sleeptrain_728x90@2x.png 2x" width="728" height="90">
-    <img src="ads/sleeptrain_320x50.png" srcset="ads/sleeptrain_320x50.png 1x, ads/sleeptrain_320x50@2x.png 2x" width="320" height="50" alt="Ad: Sleep Train. Get the app.">
-  </picture></a></aside>
-</main>
+@font-face{font-family:Nunito;src:url(fonts/nunito.woff2) format('woff2');font-weight:200 1000;font-display:swap}
+@font-face{font-family:Orbitron;src:url(fonts/orbitron.woff2) format('woff2');font-weight:400 900;font-display:swap}
+:root{--a:#FF3E00;--b:#1D4FA8;--w:#FF3E00;--wt:#111;--snap:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{font-family:Nunito,system-ui,sans-serif;background:#E8E8EC;color:#111;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;border-top:6px solid var(--a);position:relative;overflow-x:hidden}
+.bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle at 20% 10%,#fff 0 60px,transparent 61px),radial-gradient(circle at 85% 30%,#fff8 0 40px,transparent 41px),radial-gradient(circle at 70% 85%,#fff6 0 70px,transparent 71px)}
+.wrap{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;align-items:center;padding:14px max(16px,env(safe-area-inset-right)) 8px max(16px,env(safe-area-inset-left));gap:12px}
+.top{width:100%;display:flex;align-items:center;justify-content:space-between}
+.brand{font-family:Orbitron;font-weight:900;font-style:italic;font-size:18px;color:#C8102E;text-shadow:2px 2px 0 #111;display:flex;gap:8px;align-items:center}
+.brand .ball{width:24px;height:24px;border-radius:50%;background:var(--a);border:3px solid #111}
+.pill{background:#111;color:#fff;border:2px solid #fff;outline:2px solid #111;border-radius:99px;padding:4px 12px;font-weight:900;font-size:14px;display:flex;gap:6px;align-items:center}
+.pill.lt{background:#fff;color:#111}
+.dot{width:10px;height:10px;border-radius:50%;background:#FF5A5F}
+.main{width:100%;display:flex;flex-direction:column;align-items:center;gap:12px}
+.col{width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.bugw{position:relative;width:100%;max-width:560px}
+.bug{width:100%;background:#111;border:3px solid #fff;outline:3px solid #111;border-radius:20px;padding:12px;color:#fff;box-shadow:0 6px 0 #111;position:relative}
+.hdr{display:flex;justify-content:space-between;font-weight:900;font-size:15px;padding:2px 6px 10px;color:#ddd}
+.row{display:flex;align-items:center;gap:10px;padding:10px;border-radius:16px;position:relative;transition:transform .3s var(--snap),opacity .3s,box-shadow .3s,background .3s}
+.edge{width:10px;align-self:stretch;border-radius:5px}
+.bwrap{position:relative;flex:none}
+.badge{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-weight:1000;font-size:20px;border:2px solid #fff}
+/* serve ball: sits ON the badge corner (not next to the set dots), volleyball look so it can't read as a set dot */
+.sv{position:absolute;right:-9px;bottom:-7px;width:22px;height:22px;border-radius:50%;border:2px solid #111;background:#FFD23F radial-gradient(circle at 30% 30%,#fff 0 3px,transparent 4px);box-shadow:0 0 0 2px #fff;display:none}
+.sv::before,.sv::after{content:'';position:absolute;inset:3px;border-radius:50%;border:2px solid transparent;border-left-color:#111}
+.sv::after{transform:rotate(180deg)}
+.row.s .sv{display:block}
+.nm{flex:1;min-width:0}.nm b{font-size:24px;font-weight:900;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sd{display:flex;gap:6px;margin-top:4px;align-items:center;min-height:16px}.sd i{width:12px;height:12px;border-radius:50%;border:2px solid #888}.sd i.f{background:#fff;border-color:#fff}
+.pts{font-size:76px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1;min-width:96px;text-align:right}
+.pts.pop{animation:pop .28s var(--snap)}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.15)}100%{transform:scale(1)}}
+.div{height:2px;background:#333;margin:2px 8px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:10px 4px 2px}.chips:empty{display:none}.chips span{background:#262626;border-radius:99px;padding:4px 10px;font-weight:800;font-size:14px}
+.upd{font-size:14px;color:#444;font-weight:700;text-align:center}
+.row.sp{box-shadow:0 0 0 4px var(--spc),0 0 26px 6px var(--spc)}
+.row.sp.pulse{animation:glow 1.2s ease-in-out 2}
+@keyframes glow{0%,100%{box-shadow:0 0 0 4px var(--spc),0 0 26px 6px var(--spc)}50%{box-shadow:0 0 0 4px var(--spc),0 0 6px 0 var(--spc)}}
+.sptag{position:absolute;top:-16px;left:50%;transform:translateX(-50%);background:#FFD23F;color:#111;border:3px solid #111;border-radius:99px;padding:4px 16px;font:900 italic 18px Orbitron;white-space:nowrap;box-shadow:0 3px 0 #111;z-index:3;animation:spin .28s var(--snap)}
+@keyframes spin{0%{transform:translateX(-50%) scale(.6)}57%{transform:translateX(-50%) scale(1.1)}100%{transform:translateX(-50%) scale(1)}}
+/* set won burst */
+.burst{position:absolute;inset:-40px;z-index:5;display:grid;place-items:center;pointer-events:none;transition:opacity .3s}
+.burst.out{opacity:0}
+.ray{position:absolute;width:520px;height:520px;max-width:140vw;max-height:140vw;background:repeating-conic-gradient(var(--w) 0 10deg,transparent 10deg 20deg);border-radius:50%;opacity:.35;mask:radial-gradient(circle,#000 30%,transparent 70%);-webkit-mask:radial-gradient(circle,#000 30%,transparent 70%);animation:ray .5s var(--snap) forwards}
+@keyframes ray{from{transform:scale(.4) rotate(0)}to{transform:scale(1) rotate(20deg)}}
+.bcard{position:relative;background:var(--w);border:4px solid #111;border-radius:22px;padding:14px 26px;text-align:center;box-shadow:0 8px 0 #111;transform:rotate(-3deg);animation:bc .3s var(--snap)}
+@keyframes bc{0%{transform:rotate(-3deg) scale(.5)}60%{transform:rotate(-3deg) scale(1.08)}100%{transform:rotate(-3deg) scale(1)}}
+.bcard h2{font:900 italic 34px Orbitron;color:var(--wt)}.bcard p{font-weight:900;font-size:20px;color:var(--wt)}
+/* match over */
+.row.win{transform:translateY(-6px) scale(1.04);background:#1B1B1B;box-shadow:0 10px 22px rgba(0,0,0,.75),0 0 0 2px rgba(255,255,255,.25);z-index:2}
+.row.lose{opacity:.45}
+.wcard{width:100%;max-width:560px;background:#fff;border:3px solid #111;border-radius:20px;box-shadow:0 6px 0 #111;padding:14px;text-align:center;position:relative;z-index:3}
+.wcard.drop{animation:drop .22s var(--snap) .3s both}
+@keyframes drop{from{opacity:0;transform:scale(1.1)}to{opacity:1;transform:scale(1)}}
+.crown{font:900 italic 26px Orbitron;color:#111}
+.wteam{display:inline-block;margin:8px 0;padding:8px 20px;border-radius:14px;border:3px solid #111;font-weight:1000;font-size:28px;max-width:100%;overflow-wrap:anywhere}
+.btn{display:inline-block;margin-top:2px;background:#111;color:#fff;border-radius:14px;padding:12px 18px;font:900 17px Nunito;border:3px solid #111;cursor:pointer;min-height:48px}
+.conf{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.conf i{position:absolute;top:-30px;width:10px;height:16px;border:2px solid #111;border-radius:3px;animation:fall 2.4s cubic-bezier(.55,0,1,.45) forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(var(--r))}}
+/* waiting */
+.wait{width:100%;max-width:560px;background:#fff;border:3px solid #111;border-radius:22px;box-shadow:0 6px 0 #111;padding:22px;text-align:center}
+.wait h1{font:900 italic 26px Orbitron}
+.vs{display:flex;align-items:center;justify-content:center;gap:14px;margin:14px 0}
+.vs .t{display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:900;font-size:18px}
+.vs .t .badge{width:72px;height:72px;font-size:32px;border:3px solid #111;box-shadow:0 4px 0 #111}
+.vs .v{font:900 italic 30px Orbitron;color:#C8102E;text-shadow:2px 2px 0 #111}
+.coach{font-weight:900;font-size:18px;margin:14px 0 4px;color:#444}
+.bounce{width:44px;height:44px;border-radius:50%;margin:8px auto 0;background:#fff;border:3px solid #111;box-shadow:inset -8px -6px 0 #ddd;animation:bnc .9s ease-in-out infinite}
+.shadow{width:40px;height:8px;border-radius:50%;background:#0003;margin:4px auto 0;animation:shd .9s ease-in-out infinite}
+@keyframes bnc{50%{transform:translateY(-18px)}}@keyframes shd{50%{transform:scaleX(.7)}}
+/* cheer */
+.cheerc{width:100%;max-width:560px;display:flex;flex-direction:column;gap:8px}
+.cheer{display:flex;gap:10px;width:100%}
+.cheer button{flex:1;min-width:0;height:52px;border-radius:16px;border:3px solid #111;box-shadow:0 4px 0 #111;font:900 18px Nunito;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;position:relative;padding:0 8px;line-height:1.05}
+.cheer button[disabled]{opacity:.45;cursor:default}
+.cheer button .ring{width:18px;height:18px;border-radius:50%;flex:none;background:conic-gradient(currentColor var(--p,0%),transparent 0);border:2px solid currentColor;display:none}
+.cheer button[disabled] .ring{display:block}
+.cheer button .n{font-size:14px;opacity:.85;white-space:nowrap}
+.row.s .nm{padding-left:6px}
+.cnote{font-size:12px;color:#444;font-weight:700;text-align:center}
+/* footer: ad + brand line */
+.foot{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 16px max(10px,env(safe-area-inset-bottom));position:relative;z-index:1}
+.ad{position:relative;display:block;line-height:0;border-radius:6px;overflow:hidden}.ad img{width:320px;height:50px;display:block}.ad em{position:absolute;top:2px;left:4px;background:#111;color:#fff;font:800 10px/1.4 Nunito;padding:1px 4px;border-radius:3px;font-style:normal}
+.fine{font-size:12px;color:#333}.fine b{font-weight:900}
+.msg{font-weight:800;font-size:18px;text-align:center;margin:30px 0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* landscape / wide: bug left, cheer right, ad + footer on ONE row (no clipping at 932x430) */
+@media (min-width:700px){
+  .main.lv{flex-direction:row;justify-content:center;align-items:flex-start;gap:16px}
+  .main.lv .col{max-width:560px}
+  .main.lv .cheerc{width:300px;flex:none}
+  .main.lv .cheer{flex-direction:row}
+  .foot{flex-direction:row;justify-content:center;gap:16px;padding-top:4px}
+  .main.fin .col.side{max-width:900px;display:grid;grid-template-columns:300px minmax(0,560px);grid-template-rows:auto 1fr;column-gap:16px;row-gap:10px;justify-content:center;align-items:start}
+  .main.fin .wcard{grid-column:1;grid-row:1}.main.fin .savew{grid-column:1;grid-row:2}.main.fin .bugw{grid-column:2;grid-row:1/3}
+}
+@media (min-width:700px) and (max-height:500px){
+  .wrap{padding-top:8px;gap:8px}.main{gap:8px}.col{gap:6px}
+  .bug{padding:8px 12px}.hdr{padding-bottom:4px}.row{padding:6px 10px}
+  .pts{font-size:60px}.chips{padding-top:6px}
+  .foot{padding-bottom:max(6px,env(safe-area-inset-bottom))}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.15s!important}
+  .ray,.conf{display:none}
+  .sptag,.bcard,.wcard.drop{animation:fade .15s both!important}
+}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+</style></head><body><div class="bgfx"></div>
+<div id="conf"></div>
+<div class="wrap"><div class="top"><div class="brand"><div class="ball"></div>VOLLEYBOARD</div><div class="pill lt" id="tag">…</div></div>
+<div class="main" id="main"></div></div>
+<div id="say" class="sr" aria-live="polite"></div>
+<div class="foot"><a class="ad" id="house-ad" href="get/sleep-train/" rel="noopener" target="_blank" aria-label="Ad: Sleep Train"><em>Ad</em><img src="ads/sleeptrain_320x50.png" srcset="ads/sleeptrain_320x50.png 1x, ads/sleeptrain_320x50@2x.png 2x" width="320" height="50" alt="Ad: Sleep Train. Get the app."></a>
+<div class="fine">Volleyboard by <b>The Digital Citadel</b></div></div>
 <script>
 'use strict';
-const DB = 'https://play-volleyboard-default-rtdb.firebaseio.com';
+const DB = window.PVB_DB || 'https://play-volleyboard-default-rtdb.firebaseio.com';
+const KEY = 'AIzaSyBe5-zGvB85qsm_Z5jAV2bnIAxc9Y6ush0';
 const $ = id => document.getElementById(id);
 const g = new URLSearchParams(location.search).get('g') || '';
+const RM = matchMedia('(prefers-reduced-motion: reduce)');
 const hex = v => /^#[0-9A-Fa-f]{6}$/.test(v || '') ? v : null;
 const txt = (v, n) => String(v == null ? '' : v).slice(0, n || 40);
-let S = null;
-function msg(m) { $('msg').hidden = !m; $('msg').textContent = m || ''; }
-function render() {
-  if (!S) { $('board').hidden = $('info').hidden = true; msg('Waiting for the game to start…'); $('tag').textContent = '…'; return; }
-  msg(''); $('board').hidden = $('info').hidden = false;
-  const live = S.status !== 'ended';
-  $('tag').textContent = live ? 'Live' : 'Final'; $('tag').classList.toggle('live', live);
-  document.documentElement.style.setProperty('--page', hex(S.page) || '#E5E7EB'); document.documentElement.style.setProperty('--acc', hex(S.accent) || '#FF3E00');
-  const T = S.teams || {};
-  for (const k of ['A', 'B']) {
-    const t = T[k] || {}, h = $('h' + k);
-    h.style.background = hex(t.color) || (k === 'A' ? '#FF3E00' : '#1F5FD6'); h.style.color = hex(t.ink) || '#111';
-    h.querySelector('.nm').textContent = txt(t.name) || 'Team ' + k;
-    h.querySelector('.pts').textContent = +t.points || 0;
-    h.querySelector('.st').textContent = 'Sets ' + (+t.sets || 0);
-    const lim = Math.min(+S.toLimit || 0, 9), used = +t.timeouts || 0;
-    h.querySelector('.pips').innerHTML = lim ? Array.from({ length: lim }, (_, i) => `<i class="${i < used ? 'u' : ''}"></i>`).join('') : '';
-    h.classList.toggle('s', S.serving === k && live);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function lum(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => { const v = parseInt(h.substr(i, 2), 16) / 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }).reduce((a, v, i) => a + v * [.2126, .7152, .0722][i], 0); }
+const ink = c => { const l = lum(c); return (1.05 / (l + .05)) >= ((l + .05) / .05) ? '#fff' : '#111'; };   // whichever of #fff/#111 has higher WCAG contrast
+const NEED = 2;   // sets to win: the phone does not publish match length; Volleyboard default is best of 3
+let BS = null, S = null, P = null, firstPaint = true, burstT = 0, spKey = '', ended = false, lastSay = '';
+const CH = { tot: { A: 0, B: 0 }, mine: JSON.parse(localStorage.getItem('pvb.cheer.' + g) || '{"A":0,"B":0,"t":0,"q":null}'), uid: null, tok: null };
+
+function teams() {
+  const T = (S && S.teams) || {};
+  return ['A', 'B'].map(k => { const t = T[k] || {}, c = hex(t.color) || (k === 'A' ? '#FF3E00' : '#1D4FA8'), n = txt(t.name) || 'Team ' + k;
+    return { k, n, c, i: ink(c), ini: (n.trim()[0] || k).toUpperCase(), pts: +t.points || 0, sets: +t.sets || 0 }; });
   }
-  $('title').textContent = `${txt(T.A && T.A.name) || 'Team A'} vs ${txt(T.B && T.B.name) || 'Team B'}`;
-  $('setno').textContent = live ? 'Set ' + (+S.setNo || 1) : 'Match over';
-  $('sets').innerHTML = (Array.isArray(S.sets) ? S.sets : []).slice(0, 5).map(s => `<span>${+s.A || 0}–${+s.B || 0}</span>`).join('');
-  $('upd').textContent = S.updatedAt ? 'Updated ' + new Date(+S.updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' }) : '';
+function finalPts(A, B) {   // the phone resets points when the match ends: show the deciding set's score instead of 0–0
+  const ss = Array.isArray(S.sets) ? S.sets : [];
+  if (A.pts + B.pts === 0 && ss.length) { const l = ss[ss.length - 1]; A.pts = +l.A || 0; B.pts = +l.B || 0; }
 }
+function setPoint(A, B) {
+  const dec = A.sets === NEED - 1 && B.sets === NEED - 1, tgt = dec ? 15 : 25;
+  for (const [t, o] of [[A, B], [B, A]]) if (t.pts >= tgt - 1 && t.pts - o.pts >= 1) return { t, match: t.sets === NEED - 1 };
+  return null;
+}
+function say(m) { if (m && m !== lastSay) { lastSay = m; $('say').textContent = m; } }
+const badge = t => `<div class="bwrap"><div class="badge" style="background:${t.c};color:${t.i}">${esc(t.ini)}</div><span class="sv" role="img" aria-label="serving"></span></div>`;
+function row(t, cls) {
+  const d = Array.from({ length: NEED }, (_, i) => `<i class="${t.sets > i ? 'f' : ''}"></i>`).join('');
+  return `<div class="row ${cls || ''}" id="r${t.k}"><div class="edge" style="background:${t.c}"></div>${badge(t)}<div class="nm"><b>${esc(t.n)}</b><div class="sd" aria-label="${t.sets} set${t.sets === 1 ? '' : 's'} won">${d}</div></div><div class="pts" id="p${t.k}">${t.pts}</div></div>`;
+}
+const chipsH = () => (Array.isArray(S.sets) ? S.sets : []).slice(0, 5).map((s, i) => `<span>Set ${i + 1} · ${+s.A || 0}–${+s.B || 0}</span>`).join('');
+function updLine() {
+  if (!S || !S.updatedAt) return '';
+  const s = Math.max(0, (Date.now() - +S.updatedAt) / 1000);
+  return 'Updated ' + (s < 20 ? 'a few seconds ago' : s < 90 ? 'a minute ago' : new Date(+S.updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
+}
+function cheerH(A, B) {
+  const b = t => `<button data-ch="${t.k}" style="background:${t.c};color:${t.i}" aria-label="Cheer ${esc(t.n)}"><span class="ring"></span><span>Cheer ${esc(t.n)}${CH.tot[t.k] ? ` <span class="n">· ${CH.tot[t.k]}</span>` : ''}</span></button>`;
+  return `<div class="cheerc"><div class="cheer">${b(A)}${b(B)}</div><div class="cnote">Cheers are counted on this page · 1 tap every 5 s</div></div>`;
+}
+function render() {
+  const m = $('main');
+  document.documentElement.style.setProperty('--a', S && S.teams ? teams()[0].c : '#FF3E00');
+  if (!S || S.status === 'waiting') {   // nothing published yet: the phone only publishes once filming starts
+    $('tag').className = 'pill lt'; $('tag').textContent = 'SOON'; m.className = 'main';
+    const [A, B] = teams(), named = S && S.teams && S.teams.A && S.teams.A.name;
+    m.innerHTML = `<div class="wait"><h1>MATCH STARTING SOON</h1>${named ? `<div class="vs"><div class="t">${badge(A)}${esc(A.n)}</div><div class="v">VS</div><div class="t">${badge(B)}${esc(B.n)}</div></div>` : '<div class="coach">Waiting for the coach</div>'}<div class="bounce"></div><div class="shadow"></div><p style="font-weight:800;font-size:17px;margin-top:12px">The score will appear here as soon as the coach starts filming.</p><p class="upd" style="margin-top:8px">Keep this page open. No refresh needed.</p></div>`;
+    P = null; return;
+  }
+  const [A, B] = teams(), over = S.status === 'ended', live = !over;
+  if (!over && burstT > Date.now() && BS) { A.pts = +BS.A || 0; B.pts = +BS.B || 0; }
+  $('tag').className = over ? 'pill lt' : 'pill'; $('tag').innerHTML = over ? 'FINAL' : '<span class="dot"></span>LIVE';
+  const nSets = Array.isArray(S.sets) ? S.sets.length : 0;
+  const motion = !firstPaint && !RM.matches;
+  // set won? (sets array grew while live). Match over wins over the burst (debounce).
+  let burst = null;
+  if (P && nSets > P.nSets && !over && !firstPaint) { const s = S.sets[nSets - 1], w = (+s.A > +s.B) ? A : B; burst = { w, s }; BS = s; A.pts = +s.A || 0; B.pts = +s.B || 0; }
+  if (over) {
+    finalPts(A, B); const W = A.sets >= B.sets ? A : B, L = W === A ? B : A;
+    if (A.sets === B.sets) { /* abandoned level: no winner card */ }
+    document.documentElement.style.setProperty('--w', W.c); document.documentElement.style.setProperty('--wt', W.i);
+    const fin = S.updatedAt ? 'Ended ' + new Date(+S.updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+    const draw = A.sets === B.sets;
+    m.className = 'main fin';
+    m.innerHTML = `<div class="col side">${draw ? '' : `<div class="wcard ${motion && !ended ? 'drop' : ''}"><div class="crown">★ WINNER ★</div><div class="wteam" style="background:${W.c};color:${W.i}">${esc(W.n)}</div><div style="font-weight:900;font-size:18px">wins ${W.sets} set${W.sets === 1 ? '' : 's'} to ${L.sets}</div></div>`}
+      <div class="bugw"><div class="bug"><div class="hdr"><span>FINAL</span><span>${fin}</span></div>${row(A, draw ? '' : A === W ? 'win' : 'lose')}<div class="div"></div>${row(B, draw ? '' : B === W ? 'win' : 'lose')}<div class="chips">${chipsH()}</div></div></div>
+      <div class="savew" style="text-align:center"><button class="btn" id="save">Save final score image</button></div></div>`;
+    $('save').onclick = () => shareCard(A, B, W, L, draw);
+    if (motion && !ended && !draw) confetti(W.c);
+    if (!draw) say(`Final: ${W.n} wins ${W.sets} sets to ${L.sets}`);
+    ended = true; P = { nSets, A: A.pts, B: B.pts }; firstPaint = false; return;
+  }
+  ended = false; $('conf').innerHTML = '';
+  const sp = setPoint(A, B), srv = S.serving === 'A' ? A : S.serving === 'B' ? B : null;
+  m.className = 'main lv';
+  const keep = burstT > Date.now() && $('burst');   // burst still on screen: keep it while the bug updates
+  m.innerHTML = `<div class="col"><div class="bugw" id="bugw"><div class="bug">${sp ? `<div class="sptag">${sp.match ? 'MATCH POINT!' : 'SET POINT!'}</div>` : ''}<div class="hdr"><span>SET ${+S.setNo || nSets + 1}</span><span>${srv ? esc(srv.n) + ' serves' : ''}</span></div>${row(A, (sp && sp.t === A ? 'sp' : '') + (srv === A ? ' s' : ''))}<div class="div"></div>${row(B, (sp && sp.t === B ? 'sp' : '') + (srv === B ? ' s' : ''))}<div class="chips">${chipsH()}</div></div></div>
+    <div class="upd" id="upd">${sp ? `${esc(sp.t.n)} needs 1 point to win the ${sp.match ? 'match' : 'set'}` : updLine()}</div></div>${cheerH(A, B)}`;
+  if (sp) { const r = $('r' + sp.t.k); r.style.setProperty('--spc', sp.t.c); const k = sp.t.k + nSets + sp.match;
+    if (k !== spKey && motion) r.classList.add('pulse'); if (k !== spKey) say(`${sp.match ? 'Match' : 'Set'} point ${sp.t.n}`); spKey = k; } else spKey = '';
+  if (motion && P) for (const t of [A, B]) if (t.pts > P[t.k]) $('p' + t.k).classList.add('pop');
+  if (keep) $('bugw').appendChild(keep);
+  if (burst) showBurst(burst.w, burst.s, nSets);
+  wireCheer();
+  P = { nSets, A: A.pts, B: B.pts }; firstPaint = false;
+}
+function showBurst(w, s, n) {
+  document.documentElement.style.setProperty('--w', w.c); document.documentElement.style.setProperty('--wt', w.i);
+  const d = document.createElement('div'); d.className = 'burst'; d.id = 'burst';
+  d.innerHTML = `${RM.matches ? '' : '<div class="ray"></div>'}<div class="bcard"><h2>SET WON!</h2><p>${esc(w.n)} · ${Math.max(+s.A, +s.B)}–${Math.min(+s.A, +s.B)}</p></div>`;
+  $('bugw').appendChild(d); burstT = Date.now() + (RM.matches ? 2000 : 2200);
+  say(`${w.n} wins set ${n}, ${Math.max(+s.A, +s.B)} to ${Math.min(+s.A, +s.B)}`);
+  setTimeout(() => { const b = $('burst'); if (b) { b.classList.add('out'); setTimeout(() => { b.remove(); BS = null; render(); }, 300); } }, burstT - Date.now());
+}
+function confetti(c) {
+  const cs = [c, '#FFD23F', '#fff', '#C8102E', c, '#7AD3FF']; let h = '';
+  for (let i = 0; i < 60; i++) h += `<i style="left:${(i * 37) % 100}%;background:${cs[i % 6]};--r:${i * 41}deg;animation-delay:${(i % 12) * 60}ms"></i>`;
+  $('conf').className = 'conf'; $('conf').innerHTML = h; setTimeout(() => { $('conf').innerHTML = ''; }, 3400);
+}
+/* ---------- share card (client-side canvas, no server) ---------- */
+async function shareCard(A, B, W, L, draw) {
+  try { await document.fonts.load('900 italic 64px Orbitron'); await document.fonts.load('900 60px Nunito'); } catch (e) {}
+  const cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1350; const x = cv.getContext('2d');
+  x.fillStyle = '#111'; x.fillRect(0, 0, 1080, 1350);
+  x.save(); x.translate(540, 513); x.globalAlpha = .2; x.fillStyle = W.c;
+  for (let a = 0; a < 360; a += 16) { x.beginPath(); x.moveTo(0, 0); x.arc(0, 0, 1400, a * Math.PI / 180, (a + 8) * Math.PI / 180); x.closePath(); x.fill(); } x.restore();
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.font = 'italic 900 64px Orbitron'; x.fillStyle = '#000'; x.fillText('FINAL SCORE', 545, 165); x.fillStyle = '#FFD23F'; x.fillText('FINAL SCORE', 540, 160);
+  const fit = (s, px, max) => { let f = px; do { x.font = `900 ${f}px Nunito`; f -= 4; } while (x.measureText(s).width > max && f > 30); };
+  x.save(); x.translate(540, 400); x.rotate(-2 * Math.PI / 180);
+  const rr = (X, Y, w, h, r) => { x.beginPath(); x.roundRect ? x.roundRect(X, Y, w, h, r) : x.rect(X, Y, w, h); };
+  x.shadowColor = '#000c'; x.shadowBlur = 50; x.shadowOffsetY = 30; rr(-420, -150, 840, 300, 44); x.fillStyle = '#000'; x.fill(); x.shadowColor = 'transparent';
+  rr(-408, -138, 816, 276, 40); x.fillStyle = '#fff'; x.fill(); rr(-400, -130, 800, 260, 36); x.fillStyle = draw ? '#333' : W.c; x.fill();
+  x.fillStyle = draw ? '#fff' : W.i; fit(draw ? `${A.n} · ${B.n}` : W.n, 110, 720); x.fillText(draw ? `${A.n} · ${B.n}` : W.n, 0, -30);
+  x.font = '900 44px Nunito'; x.fillText(draw ? `${A.sets}–${B.sets} in sets` : `WIN · ${W.sets} set${W.sets === 1 ? '' : 's'} to ${L.sets}`, 0, 70); x.restore();
+  if (!draw) { x.globalAlpha = .6; fit(L.n, 60, 760); const lw = x.measureText(L.n).width; x.fillStyle = L.c; rr(540 - lw / 2 - 50, 650, 30, 60, 8); x.fill(); x.strokeStyle = '#fff'; x.lineWidth = 3; x.stroke(); x.fillStyle = '#fff'; x.fillText(L.n, 540 + 20, 682); x.globalAlpha = 1; }
+  const sets = (Array.isArray(S.sets) ? S.sets : []).slice(0, 5), cw = 200, gap = 24, tw = sets.length * cw + (sets.length - 1) * gap;
+  sets.forEach((s, i) => { const X = 540 - tw / 2 + i * (cw + gap); rr(X, 790, cw, 130, 28); x.fillStyle = '#262626'; x.fill(); x.fillStyle = '#bbb'; x.font = '900 26px Nunito'; x.fillText('SET ' + (i + 1), X + cw / 2, 828); x.fillStyle = '#fff'; x.font = '900 44px Nunito'; x.fillText(`${+s.A || 0}–${+s.B || 0}`, X + cw / 2, 880); });
+  const dt = new Date(S.updatedAt ? +S.updatedAt : Date.now()).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
+  x.font = '800 30px Nunito'; x.fillStyle = '#ccc'; x.fillText(`${dt} · Scored with Volleyboard by The Digital Citadel`, 540, 1270);
+  const blob = await new Promise(r => cv.toBlob(r, 'image/png')); const name = `volleyboard-${A.n}-vs-${B.n}.png`.replace(/[^\w.-]+/g, '-');
+  window.__lastCard = cv.toDataURL('image/png');
+  const f = new File([blob], name, { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [f] })) { try { await navigator.share({ files: [f], title: 'Final score' }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+/* ---------- cheers (page only; nothing on the phone) ----------
+   /cheers/<g>/<uid> = {A,B}: this device's running totals (anonymous Firebase auth). The page sums them. 1 tap / 5 s, max 30 per match per device. */
+const CH_GAP = 5000, CH_MAX = 30;
+function saveMine() { localStorage.setItem('pvb.cheer.' + g, JSON.stringify(CH.mine)); }
+function wireCheer() {
+  document.querySelectorAll('[data-ch]').forEach(b => { b.onclick = () => cheer(b.dataset.ch); });
+  tickCheer();
+}
+function tickCheer() {
+  const left = CH.mine.t + CH_GAP - Date.now(), maxed = CH.mine.A + CH.mine.B >= CH_MAX;
+  document.querySelectorAll('[data-ch]').forEach(b => { b.disabled = left > 0 || maxed; b.style.setProperty('--p', (left > 0 ? 100 - left / CH_GAP * 100 : 100) + '%'); });
+}
+setInterval(tickCheer, 200);
+async function cheer(k) {
+  if (CH.mine.t + CH_GAP > Date.now() || CH.mine.A + CH.mine.B >= CH_MAX) return;
+  CH.mine[k]++; CH.mine.t = Date.now(); CH.mine.q = 1; saveMine(); CH.tot[k]++; render(); sendCheer();
+}
+async function auth() {
+  if (CH.tok && CH.exp > Date.now()) return;
+  const r = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + KEY, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"returnSecureToken":true}' });
+  const j = await r.json(); if (!j.idToken) throw new Error('auth'); CH.tok = j.idToken; CH.uid = j.localId; CH.exp = Date.now() + (+j.expiresIn || 3600) * 900;
+}
+async function sendCheer() {
+  if (!CH.mine.q || CH.busy) return; if (navigator.onLine === false) return;   // queued: sent when back online
+  CH.busy = true;
+  try { await auth(); const r = await fetch(`${DB}/cheers/${g}/${CH.uid}.json?auth=${CH.tok}`, { method: 'PUT', body: JSON.stringify({ A: CH.mine.A, B: CH.mine.B }) });
+    if (r.ok) { CH.mine.q = null; saveMine(); } } catch (e) { /* quiet: retry later */ }
+  CH.busy = false;
+}
+addEventListener('online', sendCheer); setInterval(sendCheer, 15000);
+function watchCheers() {
+  try { const es = new EventSource(`${DB}/cheers/${g}.json`); const C = {};
+    const sum = () => { const t = { A: 0, B: 0 }; for (const u in C) { t.A += +C[u].A || 0; t.B += +C[u].B || 0; } CH.tot = t; if (S && S.status === 'live') render(); };
+    es.addEventListener('put', e => { try { const d = JSON.parse(e.data); if (d.path === '/') { for (const k in C) delete C[k]; Object.assign(C, d.data || {}); } else { const u = d.path.split('/')[1]; if (d.path.split('/').length === 2) C[u] = d.data || {}; else { C[u] = C[u] || {}; C[u][d.path.split('/')[2]] = d.data; } } sum(); } catch (x) {} });
+    es.onerror = () => {};
+  } catch (e) {}
+}
+/* ---------- live data ---------- */
 function setPath(path, data) {
   if (path === '/' || path === '') { S = data; return; }
   if (!S) S = {};
@@ -82,14 +301,16 @@ function setPath(path, data) {
   if (data === null) delete o[ks[ks.length - 1]]; else o[ks[ks.length - 1]] = data;
 }
 function start() {
-  if (!/^[a-z0-9]{6,32}$/.test(g)) { msg('This link is missing its game code.'); return; }
+  if (!/^[a-z0-9]{6,32}$/.test(g)) { $('main').innerHTML = '<p class="msg">This link is missing its game code.</p>'; return; }
   render();
   const es = new EventSource(`${DB}/live/${g}.json`);
   const on = e => { try { const d = JSON.parse(e.data); setPath(d.path, d.data); render(); } catch (x) {} };
   es.addEventListener('put', on); es.addEventListener('patch', e => { try { const d = JSON.parse(e.data); for (const k in d.data) setPath((d.path === '/' ? '' : d.path) + '/' + k, d.data[k]); render(); } catch (x) {} });
-  es.addEventListener('cancel', () => msg('This game is not available.'));
-  es.onerror = () => { if (!S) msg('Connecting…'); };
+  es.addEventListener('cancel', () => { $('main').innerHTML = '<p class="msg">This game is not available.</p>'; });
+  watchCheers();
 }
+setInterval(() => { const u = $('upd'); if (u && S && S.status === 'live' && !setPoint(...teams())) u.textContent = updLine(); }, 5000);
+window.PVBLive = { feed: d => { S = d; render(); }, state: () => S };   // test hook (local)
 start();
 /* house ad routing: iPhone/iPad (incl. iPadOS desktop-mode Safari = Mac + touch) → App Store, Android → Google Play, else the get page */
 (() => { const ua = navigator.userAgent, a = $('house-ad');
