@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <title>Volleyboard · Live score</title>
-<!-- Read-only viewer for /live/<id> (Firebase Realtime Database REST streaming). No SDK, no ad network, no tracking: the sponsor slot is a static house ad.
+<!-- Read-only viewer for /live/<id> (Firebase Realtime Database REST streaming). No SDK, no ads, no tracking. The footer opens a static About sheet (first-party apps only).
      v2 (2026-10-16): "moments" design: waiting card, scorebug, set point, set won, match over, share image, cheers (page only). -->
 <style>
 @font-face{font-family:Nunito;src:url(fonts/nunito.woff2) format('woff2');font-weight:200 1000;font-display:swap}
@@ -88,10 +88,34 @@ body{font-family:Nunito,system-ui,sans-serif;background:#E8E8EC;color:#111;min-h
 .cheer button .n{font-size:14px;opacity:.85;white-space:nowrap}
 .row.s .nm{padding-left:6px}
 .cnote{font-size:12px;color:#444;font-weight:700;text-align:center}
-/* footer: ad + brand line */
+/* footer: one quiet About link (no ads) */
 .foot{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 16px max(10px,env(safe-area-inset-bottom));position:relative;z-index:1}
-.ad{position:relative;display:block;line-height:0;border-radius:6px;overflow:hidden}.ad img{width:320px;height:50px;display:block}.ad em{position:absolute;top:2px;left:4px;background:#111;color:#fff;font:800 10px/1.4 Nunito;padding:1px 4px;border-radius:3px;font-style:normal}
-.fine{font-size:12px;color:#333}.fine b{font-weight:900}
+.about{background:none;border:0;font:800 13px Nunito;color:#111;text-decoration:underline;cursor:pointer;padding:12px;min-height:44px}
+/* About sheet: portrait bottom sheet / landscape right panel */
+.ascrim{position:fixed;inset:0;background:#000;opacity:0;z-index:40;transition:opacity .2s linear}
+.ascrim.on{opacity:.67}
+.asheet{position:fixed;left:0;right:0;bottom:0;max-height:92%;z-index:41;background:#E8E8EC;border-top:4px solid #FF3E00;border-radius:22px 22px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .2s ease-in;max-width:640px;margin:0 auto}
+.asheet.on{transform:none;transition:transform .28s var(--snap)}
+.ahd{background:#111;color:#fff;border-radius:18px 18px 0 0;padding:14px 12px 12px 18px;display:flex;align-items:center;gap:10px;position:relative;flex:none}
+.ahd::before{content:'';position:absolute;top:6px;left:50%;width:44px;height:5px;border-radius:3px;background:#666;transform:translateX(-50%)}
+.ahd h2{flex:1;font:900 italic 17px/1.25 Orbitron;margin-top:6px}
+.ax{width:44px;height:44px;border-radius:50%;border:0;background:#fff;color:#111;font:900 20px Nunito;cursor:pointer;flex:none}
+.abody{overflow:auto;padding:14px 16px max(16px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+.aintro{font-size:16px;font-weight:700;color:#111}
+.acards{display:grid;gap:12px}
+.acard{background:#fff;border:3px solid #111;border-radius:16px;box-shadow:0 4px 0 #111;padding:12px;display:flex;gap:12px;align-items:center}
+.aicon{width:56px;height:56px;border-radius:12px;border:3px solid #111;display:grid;place-items:center;font-size:28px;flex:none;background:#1B2A5C}
+.acard h3{font:900 19px Nunito}.acard p{font-size:15px;color:#333;font-weight:600;line-height:1.25}
+.atxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.atag{font:800 12px Nunito;border-radius:99px;padding:2px 10px;background:#111;color:#fff}.atag.soon{background:#FFD23F;color:#111;border:2px solid #111}
+.aview{background:#111;color:#fff;border-radius:12px;padding:0 16px;height:44px;display:grid;place-items:center;font:900 16px Nunito;text-decoration:none;flex:none}
+.afoot{text-align:center;font-size:15px;font-weight:700;color:#333;display:flex;flex-direction:column;gap:4px}.afoot a{color:#111;font-weight:900}
+@media (min-width:700px){
+  .asheet{left:auto;top:0;right:0;bottom:0;width:640px;max-width:100%;max-height:none;border-top:0;border-left:4px solid #FF3E00;border-radius:0;transform:translateX(100%);margin:0}
+  .ahd{border-radius:0}.ahd::before{display:none}.ahd h2{margin-top:0}
+  .acards{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){.asheet,.asheet.on{transform:none!important;opacity:0;transition:opacity .15s!important}.asheet.on{opacity:1}.ascrim{transition:opacity .15s}}
 .msg{font-weight:800;font-size:18px;text-align:center;margin:30px 0}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 /* landscape / wide: bug left, cheer right, ad + footer on ONE row (no clipping at 932x430) */
@@ -187,8 +211,8 @@ body{font-family:Nunito,system-ui,sans-serif;background:#E8E8EC;color:#111;min-h
 <div class="main" id="main"></div></div>
 <div id="say" class="sr" aria-live="polite"></div>
 <div id="sheetw"></div>
-<div class="foot"><a class="ad" id="house-ad" href="get/sleep-train/" rel="noopener" target="_blank" aria-label="Ad: Sleep Train"><em>Ad</em><img src="ads/sleeptrain_320x50.png" srcset="ads/sleeptrain_320x50.png 1x, ads/sleeptrain_320x50@2x.png 2x" width="320" height="50" alt="Ad: Sleep Train. Get the app."></a>
-<div class="fine">Volleyboard by <b>The Digital Citadel</b></div></div>
+<div class="foot"><button class="about" id="about" aria-haspopup="dialog">About · More from The Digital Citadel</button></div>
+<div id="aboutw"></div>
 <script>
 'use strict';
 const DB = window.PVB_DB || 'https://play-volleyboard-default-rtdb.firebaseio.com';
@@ -574,9 +598,36 @@ function start() {
 setInterval(() => { const u = $('upd'); if (u && S && S.status === 'live' && !setPoint(...teams())) u.textContent = updLine(); }, 5000);
 window.PVBLive = { feed: d => { S = d; render(); }, state: () => S, rx: () => RX, day: () => D, game: () => g };   // test hook (local)
 start();
-/* house ad routing: iPhone/iPad (incl. iPadOS desktop-mode Safari = Mac + touch) → App Store, Android → Google Play, else the get page */
-(() => { const ua = navigator.userAgent, a = $('house-ad');
-  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-  if (/Android/i.test(ua)) a.href = 'https://play.google.com/store/apps/details?id=com.thedigitalcitadel.sleeptrain';
-  else if (ios) a.href = 'https://apps.apple.com/ca/app/sleep-train/id6794692229'; })();
+/* ---------- About sheet (static, first-party, never opens by itself) ---------- */
+const ST_URL = (() => { const ua = navigator.userAgent;
+  if (/Android/i.test(ua)) return 'https://play.google.com/store/apps/details?id=com.thedigitalcitadel.sleeptrain';
+  return 'https://apps.apple.com/ca/app/sleep-train/id6794692229'; })();   // iPhone/iPad/desktop: App Store (both listings verified Oct 16 2026)
+let aboutOpen = false;
+function openAbout() {
+  if (aboutOpen) return; aboutOpen = true; const w = $('aboutw');
+  w.innerHTML = `<div class="ascrim" id="ascrim"></div><div class="asheet" id="asheet" role="dialog" aria-modal="true" aria-labelledby="ah"><div class="ahd"><h2 id="ah">MORE FROM THE DIGITAL CITADEL</h2><button class="ax" id="ax" aria-label="Close">✕</button></div>
+  <div class="abody"><p class="aintro"><b>Play Volleyboard</b> is the free live score page for this match, shared by your coach. No account needed, nothing to install.</p>
+  <div class="acards"><div class="acard"><div class="aicon" aria-hidden="true">🌙</div><div class="atxt"><h3>Sleep Train</h3><p>Baby sleep training, for parents.</p><span class="atag">App Store · Google Play</span></div><a class="aview" href="${ST_URL}" target="_blank" rel="noopener" aria-label="View Sleep Train in the app store">View</a></div>
+  <div class="acard"><div class="atxt"><h3>Manalogy</h3><span class="atag soon">Coming soon</span></div></div></div>
+  <div class="afoot"><a href="https://thedigitalcitadel.com/" target="_blank" rel="noopener">thedigitalcitadel.com</a><span>Questions or feedback? <a href="mailto:support@thedigitalcitadel.com">support@thedigitalcitadel.com</a></span></div></div></div>`;
+  document.querySelector('.wrap').setAttribute('aria-hidden', 'true'); CZ.style.visibility = 'hidden';
+  requestAnimationFrame(() => requestAnimationFrame(() => { $('ascrim').classList.add('on'); $('asheet').classList.add('on'); }));
+  $('ax').focus(); $('ax').onclick = closeAbout; $('ascrim').onclick = closeAbout;
+  let y0 = null; const sh = $('asheet');
+  sh.addEventListener('touchstart', e => { y0 = sh.querySelector('.abody').scrollTop > 0 ? null : e.touches[0].clientY; }, { passive: true });
+  sh.addEventListener('touchend', e => { if (y0 != null && e.changedTouches[0].clientY - y0 > 70) closeAbout(); y0 = null; });
+  addEventListener('keydown', aboutKey);
+}
+function aboutKey(e) {
+  if (e.key === 'Escape') return closeAbout();
+  if (e.key !== 'Tab') return; const f = [...$('asheet').querySelectorAll('a,button')], a = f[0], z = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
+}
+function closeAbout() {
+  if (!aboutOpen) return; aboutOpen = false; removeEventListener('keydown', aboutKey);
+  const s = $('asheet'), c = $('ascrim'); s.classList.remove('on'); c.classList.remove('on');
+  document.querySelector('.wrap').removeAttribute('aria-hidden'); CZ.style.visibility = '';
+  setTimeout(() => { $('aboutw').innerHTML = ''; }, 220); $('about').focus();
+}
+$('about').onclick = openAbout;
 </script></body></html>
