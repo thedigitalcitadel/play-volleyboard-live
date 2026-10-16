@@ -116,17 +116,82 @@ body{font-family:Nunito,system-ui,sans-serif;background:#E8E8EC;color:#111;min-h
   .sptag,.bcard,.wcard.drop{animation:fade .15s both!important}
 }
 @keyframes fade{from{opacity:0}to{opacity:1}}
+/* ---------- crowd reactions (page only: never on the phone, recording, stream or overlay) ---------- */
+.main.lv{flex:1}
+.main.lv .col{flex:none}
+.crowd{position:relative;width:100%;max-width:560px;flex:1;min-height:96px;border-radius:16px;overflow:hidden;z-index:0;pointer-events:none}
+.bugw,.wcard{z-index:3}
+.fl{position:absolute;bottom:0;font:30px/1 'Apple Color Emoji','Noto Color Emoji',sans-serif;filter:drop-shadow(0 2px 0 #111);will-change:transform,opacity;animation:rise 1.8s ease-out forwards}
+.fl.own{animation-duration:1.6s}
+@keyframes rise{0%{transform:translate(0,0) scale(.6);opacity:1}6.7%{transform:translate(calc(var(--wx)*.3),calc(var(--rh)*-.04)) scale(1.1)}11%{transform:translate(calc(var(--wx)*.5),calc(var(--rh)*-.07)) scale(1)}35%{transform:translate(var(--wx),calc(var(--rh)*-.35))}60%{transform:translate(calc(var(--wx)*-1),calc(var(--rh)*-.6))}77.8%{opacity:1}100%{transform:translate(0,calc(var(--rh)*-1)) scale(1);opacity:0}}
+.grp{position:absolute;display:flex;align-items:center;gap:4px;background:#fff;border:3px solid #111;border-radius:99px;padding:2px 10px 2px 6px;box-shadow:0 3px 0 #111;font-weight:1000;font-size:16px;transition:opacity .3s;white-space:nowrap}
+.grp span{font:24px/1.1 'Apple Color Emoji','Noto Color Emoji',sans-serif}
+.grp.pop{animation:gpop .14s var(--snap)}.grp.out{opacity:0}
+@keyframes gpop{50%{transform:scale(1.15)}}
+.toasts{position:absolute;right:8px;left:8px;bottom:8px;z-index:3;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.toast{display:flex;align-items:center;gap:6px;border:3px solid #111;border-radius:16px 16px 16px 4px;padding:5px 12px;font-weight:900;font-size:16px;box-shadow:0 3px 0 #111;max-width:100%;animation:tin .18s var(--snap);transition:opacity .25s}
+.toast small{font-size:12px;font-weight:800;opacity:.85;white-space:nowrap}.toast.out{opacity:0}
+@keyframes tin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.more{font-size:12px;font-weight:900;background:#111;color:#fff;border-radius:99px;padding:2px 9px}
+.tally{position:absolute;left:8px;right:8px;top:8px;display:flex;gap:8px;flex-wrap:wrap;transition:opacity .15s}
+.tally .grp{position:static;font-size:15px}
+.rxp{width:100%;max-width:560px;display:flex;flex-direction:column;gap:8px;flex:none}
+.rxr{display:flex;gap:8px}
+.rxr button{flex:1;min-width:0;height:48px;border-radius:14px;border:3px solid #111;background:#fff;box-shadow:0 4px 0 #111;font:24px/1 'Apple Color Emoji','Noto Color Emoji',sans-serif;position:relative;cursor:pointer;color:#111}
+.phr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.phr button{min-width:0;height:44px;border-radius:12px;border:3px solid #111;background:#111;color:#fff;font:900 14px Nunito;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px;cursor:pointer}
+.phr button.come{background:#FFD23F;color:#111}
+.phr button.sv2{background:#fff;color:#111;grid-column:span 1}
+.rxp button[disabled]{opacity:.45;cursor:default}
+.cd{position:absolute;right:3px;top:3px;width:14px;height:14px;border-radius:50%;background:conic-gradient(#111 var(--p,0%),transparent 0);border:2px solid #111}
+.mot{background:none;border:0;font:800 12px Nunito;color:#444;text-decoration:underline;cursor:pointer;min-height:24px;padding:0 4px}
+.chr{font-size:12px;font-weight:800;color:#ccc;margin-left:6px;white-space:nowrap}
+.scrim{position:fixed;inset:0;background:#0007;z-index:19}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:3px solid #111;border-radius:22px 22px 0 0;box-shadow:0 -6px 0 #111;padding:14px 16px max(18px,env(safe-area-inset-bottom));max-width:600px;margin:0 auto;animation:tin .18s var(--snap)}
+.sheet h3{font:900 italic 17px Orbitron;margin-bottom:10px}
+.sheet .opt{display:flex;width:100%;align-items:center;gap:10px;height:54px;border:3px solid #111;border-radius:14px;margin-bottom:8px;padding:0 14px;font:1000 19px Nunito;box-shadow:0 3px 0 #111;cursor:pointer;text-align:left}
+.sheet .opt .badge{width:34px;height:34px;font-size:16px}
+.main.fin.rxon .col.side{display:flex;flex-direction:column;align-items:center;gap:12px;flex:1}
+.main.fin.rxon{flex:1}
+@media (min-width:700px){
+  .main.rxon{display:grid!important;grid-template-columns:minmax(0,560px) minmax(300px,440px);column-gap:16px;row-gap:8px;justify-content:center;align-items:stretch;flex:1}
+  .main.lv.rxon{grid-template-rows:1fr auto}
+  .main.lv.rxon>.col{grid-column:1;grid-row:1/3;align-self:start}
+  .main.lv.rxon>.crowd{grid-column:2;grid-row:1;min-height:0;max-width:none}
+  .main.lv.rxon>.rxp{grid-column:2;grid-row:2;max-width:none}
+  .main.lv.rxon .cheerc{width:auto;max-width:none}
+  .main.fin.rxon .col.side{display:contents}
+  .main.fin.rxon{grid-template-rows:auto 1fr auto}
+  .main.fin.rxon .bugw{grid-column:1;grid-row:1/4;align-self:start}
+  .main.fin.rxon .wcard{grid-column:2;grid-row:1;max-width:none}
+  .main.fin.rxon .crowd{grid-column:2;grid-row:2;min-height:0;max-width:none}
+  .main.fin.rxon .rxp{grid-column:2;grid-row:3;max-width:none}
+  .rxon .cnote.rxn{display:none}
+}
+@media (min-width:700px) and (max-height:500px){
+  .rxon .cheer button{height:46px;font-size:16px}
+  .main.fin.rxon .wcard{padding:6px}.main.fin.rxon .crown{font-size:18px}.main.fin.rxon .wteam{margin:4px 0;padding:4px 16px;font-size:22px}.main.fin.rxon .wcard>div:last-child{display:none}
+}
+/* compact scorebug when the crowd zone is on (mockup sizes), so everything fits a 390x844 screen */
+.main.rxon .bug{padding:10px}.main.rxon .hdr{padding:0 6px 6px}.main.rxon .row{padding:6px 8px}.main.rxon .pts{font-size:64px;min-width:84px}.main.rxon .chips{padding:6px 4px 0}
+.main.rxon .badge{width:42px;height:42px}.main.rxon .nm b{font-size:22px}
+.main.fin.rxon .wcard{padding:8px}.main.fin.rxon .crown{font-size:18px}.main.fin.rxon .wteam{margin:4px 0;padding:4px 16px;font-size:22px}.main.fin.rxon .cnote.rxn{display:none}
+.main.rxon .cheer button{height:46px;font-size:16px}
+.rm .fl{display:none}
+@media (prefers-reduced-motion:reduce){.fl{display:none}.toast{animation:fade .15s both!important}}
 </style></head><body><div class="bgfx"></div>
 <div id="conf"></div>
 <div class="wrap"><div class="top"><div class="brand"><div class="ball"></div>VOLLEYBOARD</div><div class="pill lt" id="tag">…</div></div>
 <div class="main" id="main"></div></div>
 <div id="say" class="sr" aria-live="polite"></div>
+<div id="sheetw"></div>
 <div class="foot"><a class="ad" id="house-ad" href="get/sleep-train/" rel="noopener" target="_blank" aria-label="Ad: Sleep Train"><em>Ad</em><img src="ads/sleeptrain_320x50.png" srcset="ads/sleeptrain_320x50.png 1x, ads/sleeptrain_320x50@2x.png 2x" width="320" height="50" alt="Ad: Sleep Train. Get the app."></a>
 <div class="fine">Volleyboard by <b>The Digital Citadel</b></div></div>
 <script>
 'use strict';
 const DB = window.PVB_DB || 'https://play-volleyboard-default-rtdb.firebaseio.com';
 const KEY = 'AIzaSyBe5-zGvB85qsm_Z5jAV2bnIAxc9Y6ush0';
+const IDT = window.PVB_IDT || 'https://identitytoolkit.googleapis.com', STK = window.PVB_STK || 'https://securetoken.googleapis.com', QX = window.PVB_Q || '';   // test hooks (emulator)
 const $ = id => document.getElementById(id);
 const g = new URLSearchParams(location.search).get('g') || '';
 const RM = matchMedia('(prefers-reduced-motion: reduce)');
@@ -157,7 +222,7 @@ function say(m) { if (m && m !== lastSay) { lastSay = m; $('say').textContent = 
 const badge = t => `<div class="bwrap"><div class="badge" style="background:${t.c};color:${t.i}">${esc(t.ini)}</div><span class="sv" role="img" aria-label="serving"></span></div>`;
 function row(t, cls) {
   const d = Array.from({ length: NEED }, (_, i) => `<i class="${t.sets > i ? 'f' : ''}"></i>`).join('');
-  return `<div class="row ${cls || ''}" id="r${t.k}"><div class="edge" style="background:${t.c}"></div>${badge(t)}<div class="nm"><b>${esc(t.n)}</b><div class="sd" aria-label="${t.sets} set${t.sets === 1 ? '' : 's'} won">${d}</div></div><div class="pts" id="p${t.k}">${t.pts}</div></div>`;
+  return `<div class="row ${cls || ''}" id="r${t.k}"><div class="edge" style="background:${t.c}"></div>${badge(t)}<div class="nm"><b>${esc(t.n)}</b><div class="sd" aria-label="${t.sets} set${t.sets === 1 ? '' : 's'} won">${d}${CH.tot[t.k] ? `<span class="chr" aria-label="${CH.tot[t.k]} cheers">👏 ${CH.tot[t.k]}</span>` : ''}</div></div><div class="pts" id="p${t.k}">${t.pts}</div></div>`;
 }
 const chipsH = () => (Array.isArray(S.sets) ? S.sets : []).slice(0, 5).map((s, i) => `<span>Set ${i + 1} · ${+s.A || 0}–${+s.B || 0}</span>`).join('');
 function updLine() {
@@ -165,9 +230,9 @@ function updLine() {
   const s = Math.max(0, (Date.now() - +S.updatedAt) / 1000);
   return 'Updated ' + (s < 20 ? 'a few seconds ago' : s < 90 ? 'a minute ago' : new Date(+S.updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
 }
-function cheerH(A, B) {
+function cheerH(A, B, bare) {
   const b = t => `<button data-ch="${t.k}" style="background:${t.c};color:${t.i}" aria-label="Cheer ${esc(t.n)}"><span class="ring"></span><span>Cheer ${esc(t.n)}${CH.tot[t.k] ? ` <span class="n">· ${CH.tot[t.k]}</span>` : ''}</span></button>`;
-  return `<div class="cheerc"><div class="cheer">${b(A)}${b(B)}</div><div class="cnote">Cheers are counted on this page · 1 tap every 5 s</div></div>`;
+  return `<div class="cheerc"><div class="cheer">${b(A)}${b(B)}</div>${bare ? '' : '<div class="cnote">Cheers are counted on this page · 1 tap every 5 s</div>'}</div>`;
 }
 function render() {
   const m = $('main');
@@ -195,7 +260,8 @@ function render() {
     m.className = 'main fin';
     m.innerHTML = `<div class="col side">${draw ? '' : `<div class="wcard ${motion && !ended ? 'drop' : ''}"><div class="crown">★ WINNER ★</div><div class="wteam" style="background:${W.c};color:${W.i}">${esc(W.n)}</div><div style="font-weight:900;font-size:18px">wins ${W.sets} set${W.sets === 1 ? '' : 's'} to ${L.sets}</div></div>`}
       <div class="bugw"><div class="bug"><div class="hdr"><span>FINAL</span><span>${fin}</span></div>${row(A, draw ? '' : A === W ? 'win' : 'lose')}<div class="div"></div>${row(B, draw ? '' : B === W ? 'win' : 'lose')}<div class="chips">${chipsH()}</div></div></div>
-      <div class="savew" style="text-align:center"><button class="btn" id="save">Save final score image</button></div></div>`;
+      ${rxOn() ? `<div id="czslot"></div><div class="rxp">${rxPanel(A, B, true)}</div>` : '<div class="savew" style="text-align:center"><button class="btn" id="save">Save final score image</button></div>'}</div>`;
+    m.classList.toggle('rxon', rxOn()); placeCrowd(); wireRx();
     $('save').onclick = () => shareCard(A, B, W, L, draw);
     if (motion && !ended && !draw) confetti(W.c);
     if (!draw) say(`Final: ${W.n} wins ${W.sets} sets to ${L.sets}`);
@@ -206,20 +272,21 @@ function render() {
   m.className = 'main lv';
   const keep = burstT > Date.now() && $('burst');   // burst still on screen: keep it while the bug updates
   m.innerHTML = `<div class="col"><div class="bugw" id="bugw"><div class="bug">${sp ? `<div class="sptag">${sp.match ? 'MATCH POINT!' : 'SET POINT!'}</div>` : ''}<div class="hdr"><span>SET ${+S.setNo || nSets + 1}</span><span>${srv ? esc(srv.n) + ' serves' : ''}</span></div>${row(A, (sp && sp.t === A ? 'sp' : '') + (srv === A ? ' s' : ''))}<div class="div"></div>${row(B, (sp && sp.t === B ? 'sp' : '') + (srv === B ? ' s' : ''))}<div class="chips">${chipsH()}</div></div></div>
-    <div class="upd" id="upd">${sp ? `${esc(sp.t.n)} needs 1 point to win the ${sp.match ? 'match' : 'set'}` : updLine()}</div></div>${cheerH(A, B)}`;
+    <div class="upd" id="upd">${sp ? `${esc(sp.t.n)} needs 1 point to win the ${sp.match ? 'match' : 'set'}` : updLine()}</div></div>${rxOn() ? '<div id="czslot"></div>' : ''}${rxOn() ? `<div class="rxp">${cheerH(A, B, 1)}${rxPanel(A, B, false)}</div>` : cheerH(A, B)}`;
+  m.classList.toggle('rxon', rxOn()); placeCrowd();
   if (sp) { const r = $('r' + sp.t.k); r.style.setProperty('--spc', sp.t.c); const k = sp.t.k + nSets + sp.match;
     if (k !== spKey && motion) r.classList.add('pulse'); if (k !== spKey) say(`${sp.match ? 'Match' : 'Set'} point ${sp.t.n}`); spKey = k; } else spKey = '';
   if (motion && P) for (const t of [A, B]) if (t.pts > P[t.k]) $('p' + t.k).classList.add('pop');
   if (keep) $('bugw').appendChild(keep);
   if (burst) showBurst(burst.w, burst.s, nSets);
-  wireCheer();
+  wireCheer(); wireRx();
   P = { nSets, A: A.pts, B: B.pts }; firstPaint = false;
 }
 function showBurst(w, s, n) {
   document.documentElement.style.setProperty('--w', w.c); document.documentElement.style.setProperty('--wt', w.i);
   const d = document.createElement('div'); d.className = 'burst'; d.id = 'burst';
   d.innerHTML = `${RM.matches ? '' : '<div class="ray"></div>'}<div class="bcard"><h2>SET WON!</h2><p>${esc(w.n)} · ${Math.max(+s.A, +s.B)}–${Math.min(+s.A, +s.B)}</p></div>`;
-  $('bugw').appendChild(d); burstT = Date.now() + (RM.matches ? 2000 : 2200);
+  $('bugw').appendChild(d); RX.pauseTo = Date.now() + 2500; burstT = Date.now() + (RM.matches ? 2000 : 2200);
   say(`${w.n} wins set ${n}, ${Math.max(+s.A, +s.B)} to ${Math.min(+s.A, +s.B)}`);
   setTimeout(() => { const b = $('burst'); if (b) { b.classList.add('out'); setTimeout(() => { b.remove(); BS = null; render(); }, 300); } }, burstT - Date.now());
 }
@@ -272,26 +339,203 @@ async function cheer(k) {
   if (CH.mine.t + CH_GAP > Date.now() || CH.mine.A + CH.mine.B >= CH_MAX) return;
   CH.mine[k]++; CH.mine.t = Date.now(); CH.mine.q = 1; saveMine(); CH.tot[k]++; render(); sendCheer();
 }
-async function auth() {
-  if (CH.tok && CH.exp > Date.now()) return;
-  const r = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + KEY, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"returnSecureToken":true}' });
-  const j = await r.json(); if (!j.idToken) throw new Error('auth'); CH.tok = j.idToken; CH.uid = j.localId; CH.exp = Date.now() + (+j.expiresIn || 3600) * 900;
+let authP = null;
+function auth() { if (CH.tok && CH.exp > Date.now()) return Promise.resolve(); return authP || (authP = auth1().finally(() => { authP = null; })); }
+async function auth1() {
+  let j = null; const rt = localStorage.getItem('pvb.anon.rt');
+  if (rt) try { const x = await (await fetch(STK + '/v1/token?key=' + KEY, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(rt) })).json();
+    if (x.id_token) j = { idToken: x.id_token, refreshToken: x.refresh_token, localId: x.user_id, expiresIn: x.expires_in }; } catch (e) {}
+  if (!j) { const r = await fetch(IDT + '/v1/accounts:signUp?key=' + KEY, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"returnSecureToken":true}' }); j = await r.json(); }
+  if (!j || !j.idToken) throw new Error('auth');
+  CH.tok = j.idToken; CH.uid = j.localId; CH.exp = Date.now() + (+j.expiresIn || 3600) * 900; if (j.refreshToken) localStorage.setItem('pvb.anon.rt', j.refreshToken);
 }
 async function sendCheer() {
   if (!CH.mine.q || CH.busy) return; if (navigator.onLine === false) return;   // queued: sent when back online
   CH.busy = true;
-  try { await auth(); const r = await fetch(`${DB}/cheers/${g}/${CH.uid}.json?auth=${CH.tok}`, { method: 'PUT', body: JSON.stringify({ A: CH.mine.A, B: CH.mine.B }) });
+  try { await auth(); const r = await fetch(`${DB}/cheers/${g}/${CH.uid}.json?auth=${CH.tok}${QX}`, { method: 'PUT', body: JSON.stringify({ A: CH.mine.A, B: CH.mine.B }) });
     if (r.ok) { CH.mine.q = null; saveMine(); } } catch (e) { /* quiet: retry later */ }
   CH.busy = false;
 }
 addEventListener('online', sendCheer); setInterval(sendCheer, 15000);
 function watchCheers() {
-  try { const es = new EventSource(`${DB}/cheers/${g}.json`); const C = {};
+  try { const es = new EventSource(`${DB}/cheers/${g}.json${QX ? '?' + QX.slice(1) : ''}`); const C = {};
     const sum = () => { const t = { A: 0, B: 0 }; for (const u in C) { t.A += +C[u].A || 0; t.B += +C[u].B || 0; } CH.tot = t; if (S && S.status === 'live') render(); };
     es.addEventListener('put', e => { try { const d = JSON.parse(e.data); if (d.path === '/') { for (const k in C) delete C[k]; Object.assign(C, d.data || {}); } else { const u = d.path.split('/')[1]; if (d.path.split('/').length === 2) C[u] = d.data || {}; else { C[u] = C[u] || {}; C[u][d.path.split('/')[2]] = d.data; } } sum(); } catch (x) {} });
     es.onerror = () => {};
   } catch (e) {}
 }
+/* ---------- crowd reactions (page only; the phone, recording, stream and overlay never read these) ----------
+   /rx/<g>/<bucket>/<emoji> = count per 2 s bucket (bucket = floor(epoch / 2000)); /rxu/<g>/<uid> = this device's limiter {ts, n, e, b}
+   /ph/<g>/<key> = {p: fixed phrase id, t?: 'A'|'B', ts, u: anon uid};      /phu/<g>/<uid> = phrase limiter {ts, n, k}
+   Rules enforce: fixed enums only (no free text), +1 per write, 1.5 s / 12 s server gaps, 60 / 20 per match, live/<g> must be live or ended < 10 min, live/<g>/rxOff kill switch. */
+const EMO = [['fire', '🔥', 'fire'], ['clap', '👏', 'clap'], ['ball', '🏐', 'volleyball'], ['flex', '💪', 'strong']];
+const EM = Object.fromEntries(EMO.map(e => [e[0], e[1]]));
+const PH = { letsgo: "Let's go!", greatserve: 'Great serve!', nicedig: 'Nice dig!', ace: 'Ace!', niceblock: 'Nice block!', comeon: 'Come on…', gg: 'GG!', wellplayed: 'Well played!' };
+const RX_GAP = 2000, RX_MAX = 60, PH_GAP = 15000, PH_MAX = 20, OPEN_AFTER = 600000;
+const RX = JSON.parse(localStorage.getItem('pvb.rx.' + g) || 'null') || { rt: 0, rn: 0, pt: 0, pn: 0, re: '' };
+Object.assign(RX, { data: {}, base: false, pbase: false, seenPh: {}, pend: {}, qr: null, qp: null, busy: false, pauseTo: 0, note: '' });
+let RMX = localStorage.getItem('pvb.calm') === '1';
+const calm = () => RM.matches || RMX;
+const rxSave = () => localStorage.setItem('pvb.rx.' + g, JSON.stringify({ rt: RX.rt, rn: RX.rn, pt: RX.pt, pn: RX.pn, re: RX.re }));
+function rxOn() {
+  if (!S || S.rxOff === true) return false;
+  if (S.status === 'live') return true;
+  return S.status === 'ended' && (!S.updatedAt || +S.updatedAt + OPEN_AFTER > Date.now());
+}
+/* the crowd zone is ONE persistent element (render() rebuilds #main; floats must survive score updates) */
+const CZ = document.createElement('div'); CZ.className = 'crowd'; CZ.setAttribute('aria-hidden', 'true');
+CZ.innerHTML = '<div class="tally" id="tally"></div><div class="toasts" id="toasts"></div>';
+function placeCrowd() { const sl = $('czslot'); if (sl) sl.replaceWith(CZ); CZ.classList.toggle('rm', calm()); paintTally(); }
+function rxPanel(A, B, over) {
+  const rb = ([k, e, n]) => `<button data-rx="${k}" aria-label="React ${n}" title="${n}">${e}<span class="cd" hidden></span></button>`;
+  const pb = (k, cls) => `<button data-ph="${k}" class="${cls || ''}" aria-label="Send: ${k === 'comeon' ? 'Come on, pick a team' : PH[k]}">${PH[k]}</button>`;
+  const rxRow = `<div class="rxr">${(over ? [EMO[1], EMO[0], EMO[2], EMO[3]] : EMO).map(rb).join('')}</div>`;
+  const ph = over ? `<div class="phr">${pb('gg')}${pb('wellplayed')}<button class="sv2" id="save">Save image</button></div>`
+    : `<div class="phr">${pb('letsgo')}${pb('greatserve')}${pb('nicedig')}${pb('ace')}${pb('niceblock')}${pb('comeon', 'come')}</div>`;
+  return `${rxRow}${ph}<div class="cnote rxn" id="rxn">${esc(RX.note || 'Tap to react · everyone watching sees it')} · <button class="mot" id="mot">${calm() ? 'Motion off' : 'Motion on'}</button></div>`;
+}
+function wireRx() {
+  document.querySelectorAll('[data-rx]').forEach(b => { b.onclick = () => react(b.dataset.rx, b); });
+  document.querySelectorAll('[data-ph]').forEach(b => { b.onclick = () => b.dataset.ph === 'comeon' ? comeOn() : phrase(b.dataset.ph); });
+  const mo = $('mot'); if (mo) mo.onclick = () => { RMX = !RMX; localStorage.setItem('pvb.calm', RMX ? '1' : '0'); render(); };
+  tickRx();
+}
+function tickRx() {
+  const now = Date.now(), rl = RX.rt + RX_GAP - now, pl = RX.pt + PH_GAP - now, rmax = RX.rn >= RX_MAX, pmax = RX.pn >= PH_MAX;
+  document.querySelectorAll('[data-rx]').forEach(b => { const dis = rl > 0 || rmax, cd = b.querySelector('.cd'), mine = b.dataset.rx === RX.re && rl > 0;
+    b.disabled = dis; cd.hidden = !mine; if (mine) cd.style.setProperty('--p', (100 - rl / RX_GAP * 100) + '%');
+    b.setAttribute('aria-label', b.title.replace(/^/, 'React ') + (rmax ? ', limit reached' : rl > 0 ? `, available in ${Math.ceil(rl / 1000)} seconds` : '')); });
+  document.querySelectorAll('[data-ph]').forEach(b => { b.disabled = pl > 0 || pmax; });
+  const n = $('rxn'); if (n && RX.note && rl <= 0 && pl <= 0 && !rmax && !pmax) { RX.note = ''; n.firstChild.textContent = 'Tap to react · everyone watching sees it · '; }
+}
+setInterval(tickRx, 200);
+setInterval(() => { if (S && S.status === 'ended' && document.querySelector('.rxon') && !rxOn()) render(); }, 15000);   // close 10 min after the match
+function setNote(t) { RX.note = t; const n = $('rxn'); if (n) n.firstChild.textContent = t + ' · '; }
+const limNote = () => setNote(RX.rn >= RX_MAX || RX.pn >= PH_MAX ? "That's the max for this match. Thanks for cheering!" : 'Nice! Reactions: 1 per 2 s · phrases: 1 per 15 s');
+/* ---- display ---- */
+const FL = [], GR = {}, ARR = {}, TAL = [];
+function zoneH() { return CZ.clientHeight || 120; }
+function float(e, x, own) {
+  if (calm()) return; while (FL.length >= 12) { const o = FL.shift(); o.remove(); }
+  const d = document.createElement('div'); d.className = 'fl' + (own ? ' own' : ''); d.textContent = EM[e];
+  d.style.left = `calc(${x}% - 15px)`; d.style.setProperty('--rh', (zoneH() * .7) + 'px'); d.style.setProperty('--wx', ((Math.random() < .5 ? -1 : 1) * 8) + 'px');
+  CZ.insertBefore(d, CZ.firstChild); FL.push(d); setTimeout(() => { d.remove(); const i = FL.indexOf(d); if (i >= 0) FL.splice(i, 1); }, 1850);
+}
+function group(e, n) {
+  let p = GR[e];
+  if (!p) { if (Object.keys(GR).length >= 3) { const k = Object.keys(GR)[0]; GR[k].el.remove(); clearTimeout(GR[k].t); delete GR[k]; }
+    const el = document.createElement('div'); el.className = 'grp'; const i = Object.keys(GR).length;
+    el.style.left = (8 + ((i * 31 + e.length * 13) % 52)) + '%'; el.style.top = (10 + i * 22) + '%';
+    p = GR[e] = { el, n: 0 }; CZ.insertBefore(el, $('toasts')); }
+  p.n += n; p.el.innerHTML = `<span>${EM[e]}</span>×${p.n}`; p.el.classList.remove('pop', 'out'); void p.el.offsetWidth; if (!calm()) p.el.classList.add('pop');
+  clearTimeout(p.t); p.t = setTimeout(() => { p.el.classList.add('out'); setTimeout(() => { p.el.remove(); if (GR[e] === p) delete GR[e]; }, 300); }, 2500);
+}
+function arrive(e, n, own) {   // n taps of one emoji
+  const now = Date.now(); for (let i = 0; i < n; i++) TAL.push([now, e]); paintTally();
+  if (calm()) return;
+  if (own) { float(e, 10 + Math.random() * 80, true); return; }
+  if (GR[e]) { group(e, n); return; }
+  const a = (ARR[e] = (ARR[e] || []).filter(t => now - t < 1500)); for (let i = 0; i < n; i++) a.push(now);
+  if (a.length >= 4) { group(e, a.length); ARR[e] = []; return; }
+  for (let i = 0; i < Math.min(n, 6); i++) setTimeout(() => float(e, 10 + Math.random() * 80), i * 140);
+}
+function paintTally() {
+  const t = $('tally'); if (!t) return; const now = Date.now(); while (TAL.length && now - TAL[0][0] > 30000) TAL.shift();
+  if (!calm()) { t.innerHTML = ''; return; }
+  const c = {}; for (const [, e] of TAL) c[e] = (c[e] || 0) + 1;
+  const h = EMO.filter(([k]) => c[k]).map(([k, e]) => `<span class="grp"><span>${e}</span>${c[k]}</span>`).join('');
+  if (t.innerHTML !== h) { t.style.opacity = 0; setTimeout(() => { t.innerHTML = h; t.style.opacity = 1; }, 150); }
+}
+setInterval(paintTally, 1000);
+const TQ = [], TS = [];   // queued + shown toasts
+function phText(p, t) { const [A, B] = teams(), T = t === 'A' ? A : t === 'B' ? B : null; return { txt: p === 'comeon' && T ? `Come on ${T.n}!` : PH[p] + (p === 'gg' ? ' 🏐' : ''), T }; }
+function toast(p, t, own) {
+  const key = p + (t || ''), now = Date.now(), hit = TS.find(x => x.key === key && now - x.at < 3000);
+  if (hit && !own) { hit.n++; hit.at = now; hit.paint(); return; }
+  if (own) { TQ.unshift({ p, t, own, key }); if (TS.length >= 2) { const o = TS.shift(); clearTimeout(o.tm); o.el.remove(); } } else TQ.push({ p, t, own, key }); while (TQ.length > 6) { const i = TQ.findIndex(x => !x.own); TQ.splice(i >= 0 ? i : 0, 1); }   // newest wins; own phrase kept
+  pumpToasts();
+}
+function pumpToasts() {
+  const box = $('toasts'); if (!box) return;
+  if (RX.pauseTo > Date.now() || (typeof burstT !== 'undefined' && burstT > Date.now())) { setTimeout(pumpToasts, 300); return; }
+  while (TQ.length && TS.length < 2) {
+    const q = TQ.shift(), { txt, T } = phText(q.p, q.t), el = document.createElement('div'), x = { key: q.key, n: 1, at: Date.now(), own: q.own, el };
+    el.className = 'toast'; el.style.background = T ? T.c : '#fff'; el.style.color = T ? T.i : '#111';
+    x.paint = () => { el.innerHTML = `${esc(txt)} <small>· ${x.own && x.n === 1 ? 'you' : x.n > 1 ? `×${x.n} fans` : 'a fan'}</small>`; clearTimeout(x.tm); x.tm = setTimeout(drop, calm() ? 4000 : 3000); };
+    const drop = () => { el.classList.add('out'); setTimeout(() => { el.remove(); const i = TS.indexOf(x); if (i >= 0) TS.splice(i, 1); paintMore(); pumpToasts(); }, 250); };
+    x.paint(); box.insertBefore(el, box.querySelector('.more')); TS.push(x);
+  }
+  paintMore();
+}
+function paintMore() { const box = $('toasts'); if (!box) return; let m = box.querySelector('.more'); if (!TQ.length) { if (m) m.remove(); return; }
+  if (!m) { m = document.createElement('span'); m.className = 'more'; box.appendChild(m); } m.textContent = `+${TQ.length} more`; }
+/* ---- sending ---- */
+const TSV = { '.sv': 'timestamp' };
+const bucket = () => Math.floor(Date.now() / 2000);
+function react(e, btn) {
+  const now = Date.now(); if (RX.rt + RX_GAP > now || RX.rn >= RX_MAX || !rxOn()) return;
+  RX.rt = now; RX.re = e; RX.rn++; rxSave(); limNote(); tickRx();
+  arrive(e, 1, true); const b = bucket(); RX.pend[b + e] = (RX.pend[b + e] || 0) + 1;
+  RX.qr = { e, b, at: now }; sendQ();
+}
+function phrase(p, t) {
+  const now = Date.now(); if (RX.pt + PH_GAP > now || RX.pn >= PH_MAX || !rxOn()) return;
+  RX.pt = now; RX.pn++; rxSave(); limNote(); tickRx();
+  const k = now.toString(36).padStart(9, '0') + [...crypto.getRandomValues(new Uint8Array(8))].map(x => 'abcdefghijklmnopqrstuvwxyz0123456789'[x % 36]).join('');
+  RX.seenPh[k] = 1; toast(p, t, true); RX.qp = { p, t, k, at: now }; sendQ();
+}
+function comeOn() {
+  const [A, B] = teams(), o = T => `<button class="opt" data-co="${T.k}" style="background:${T.c};color:${T.i}">${badge(T)} Come on ${esc(T.n)}!</button>`;
+  $('sheetw').innerHTML = `<div class="scrim" id="scrim"></div><div class="sheet" role="dialog" aria-label="Come on, pick a team"><h3>COME ON…</h3>${o(A)}${o(B)}<div class="cnote">Fixed phrases only · no typing</div></div>`;
+  const close = () => { $('sheetw').innerHTML = ''; removeEventListener('keydown', esc1); }, esc1 = ev => { if (ev.key === 'Escape') close(); };
+  $('scrim').onclick = close; addEventListener('keydown', esc1);
+  document.querySelectorAll('[data-co]').forEach(b => { b.onclick = () => { close(); phrase('comeon', b.dataset.co); }; });
+  document.querySelector('[data-co]').focus();
+}
+const jget = async p => { const r = await fetch(`${DB}/${p}.json?auth=${CH.tok}${QX}`); return r.ok ? r.json() : null; };
+const patch = body => fetch(`${DB}/.json?auth=${CH.tok}${QX}`, { method: 'PATCH', body: JSON.stringify(body) });
+async function sendQ() {   // offline: keep 1 reaction + 1 phrase, replay on reconnect only if < 30 s old
+  if (RX.busy || navigator.onLine === false) return; RX.busy = true;
+  try {
+    await auth();
+    for (const k of ['qr', 'qp']) { const q = RX[k]; if (!q) continue; if (Date.now() - q.at > 30000) { RX[k] = null; continue; }
+      let ok = false;
+      for (let a = 0; a < 3 && !ok; a++) {
+        const lim = await jget(`${k === 'qr' ? 'rxu' : 'phu'}/${g}/${CH.uid}`), n = ((lim && +lim.n) || 0) + 1;
+        let r;
+        if (k === 'qr') { const b = a ? bucket() : q.b, cur = +(await jget(`rx/${g}/${b}/${q.e}`)) || 0;
+          r = await patch({ [`rx/${g}/${b}/${q.e}`]: cur + 1, [`rxu/${g}/${CH.uid}`]: { ts: TSV, n, e: q.e, b } }); }
+        else { const v = { p: q.p, ts: TSV, u: CH.uid }; if (q.t) v.t = q.t;
+          r = await patch({ [`ph/${g}/${q.k}`]: v, [`phu/${g}/${CH.uid}`]: { ts: TSV, n, k: q.k } }); }
+        ok = r.ok; if (!ok && r.status !== 401) break; if (!ok) await new Promise(z => setTimeout(z, 400 + Math.random() * 600));
+      }
+      RX[k] = null;   // refused (limit / closed): drop silently
+    }
+  } catch (e) { /* offline or auth: retried on reconnect */ }
+  RX.busy = false;
+}
+addEventListener('online', sendQ);
+function watchRx() {
+  const qs = (n) => `?orderBy=${encodeURIComponent('"$key"')}&limitToLast=${n}${QX}`;
+  try { const es = new EventSource(`${DB}/rx/${g}.json${qs(4)}`);
+    const apply = (b, e, v) => { const k = b + e, old = (RX.data[b] && RX.data[b][e]) || 0; RX.data[b] = RX.data[b] || {}; RX.data[b][e] = v;
+      if (!RX.base || !rxOn() || !(e in EM)) return; let d = (+v || 0) - old; const mine = Math.min(d, RX.pend[k] || 0); RX.pend[k] = (RX.pend[k] || 0) - mine; d -= mine; if (d > 0) arrive(e, Math.min(d, 99)); };
+    es.addEventListener('put', ev => { try { const d = JSON.parse(ev.data), ps = d.path.split('/').filter(Boolean);
+      if (!ps.length) { if (!RX.base) { RX.data = d.data || {}; RX.base = true; } else for (const b in d.data || {}) for (const e in d.data[b]) apply(b, e, d.data[b][e]); }
+      else if (ps.length === 1) { for (const e in d.data || {}) apply(ps[0], e, d.data[e]); }
+      else apply(ps[0], ps[1], d.data); } catch (x) {} });
+    es.addEventListener('patch', ev => { try { const d = JSON.parse(ev.data), ps = d.path.split('/').filter(Boolean);
+      for (const k in d.data) { const kp = [...ps, ...k.split('/')]; if (kp.length === 2) apply(kp[0], kp[1], d.data[k]); else for (const e in d.data[k] || {}) apply(kp[0], e, d.data[k][e]); } } catch (x) {} });
+  } catch (e) {}
+  try { const es = new EventSource(`${DB}/ph/${g}.json${qs(8)}`); let win = [];
+    const one = (k, v) => { if (!v || RX.seenPh[k]) return; RX.seenPh[k] = 1; if (!RX.pbase || !rxOn() || !PH[v.p] || v.u === CH.uid) return;
+      const now = Date.now(); win = win.filter(t => now - t < 1000); if (win.length >= 10) return; win.push(now);   // >10/s per match: dropped
+      toast(v.p, v.t === 'A' || v.t === 'B' ? v.t : null); };
+    es.addEventListener('put', ev => { try { const d = JSON.parse(ev.data), ps = d.path.split('/').filter(Boolean);
+      if (!ps.length) { for (const k in d.data || {}) if (!RX.pbase) RX.seenPh[k] = 1; else one(k, d.data[k]); RX.pbase = true; } else if (ps.length === 1) one(ps[0], d.data); } catch (x) {} });
+  } catch (e) {}
+}
+
 /* ---------- live data ---------- */
 function setPath(path, data) {
   if (path === '/' || path === '') { S = data; return; }
@@ -303,14 +547,14 @@ function setPath(path, data) {
 function start() {
   if (!/^[a-z0-9]{6,32}$/.test(g)) { $('main').innerHTML = '<p class="msg">This link is missing its game code.</p>'; return; }
   render();
-  const es = new EventSource(`${DB}/live/${g}.json`);
+  const es = new EventSource(`${DB}/live/${g}.json${QX ? '?' + QX.slice(1) : ''}`);
   const on = e => { try { const d = JSON.parse(e.data); setPath(d.path, d.data); render(); } catch (x) {} };
   es.addEventListener('put', on); es.addEventListener('patch', e => { try { const d = JSON.parse(e.data); for (const k in d.data) setPath((d.path === '/' ? '' : d.path) + '/' + k, d.data[k]); render(); } catch (x) {} });
   es.addEventListener('cancel', () => { $('main').innerHTML = '<p class="msg">This game is not available.</p>'; });
-  watchCheers();
+  watchCheers(); watchRx();
 }
 setInterval(() => { const u = $('upd'); if (u && S && S.status === 'live' && !setPoint(...teams())) u.textContent = updLine(); }, 5000);
-window.PVBLive = { feed: d => { S = d; render(); }, state: () => S };   // test hook (local)
+window.PVBLive = { feed: d => { S = d; render(); }, state: () => S, rx: () => RX };   // test hook (local)
 start();
 /* house ad routing: iPhone/iPad (incl. iPadOS desktop-mode Safari = Mac + touch) → App Store, Android → Google Play, else the get page */
 (() => { const ua = navigator.userAgent, a = $('house-ad');
