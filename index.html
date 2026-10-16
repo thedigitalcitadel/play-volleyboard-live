@@ -365,9 +365,9 @@ function watchCheers() {
   } catch (e) {}
 }
 /* ---------- crowd reactions (page only; the phone, recording, stream and overlay never read these) ----------
-   /rx/<g>/<bucket>/<emoji> = count per 2 s bucket (bucket = floor(epoch / 2000)); /rxu/<g>/<uid> = this device's limiter {ts, n, e, b}
+   /rx/<g>/<bucket>/<uid> = emoji: one entry per fan per 2 s bucket (bucket = floor(epoch / 2000)); no shared counters, so simultaneous fans never collide; /rxu/<g>/<uid> = this device's limiter {ts, n, e, b}
    /ph/<g>/<key> = {p: fixed phrase id, t?: 'A'|'B', ts, u: anon uid};      /phu/<g>/<uid> = phrase limiter {ts, n, k}
-   Rules enforce: fixed enums only (no free text), +1 per write, 1.5 s / 12 s server gaps, 60 / 20 per match, live/<g> must be live or ended < 10 min, live/<g>/rxOff kill switch. */
+   Rules enforce: fixed enums only (no free text), one entry per fan per bucket (no overwrite), 1.5 s / 12 s server gaps, 60 / 20 per match, live/<g> must be live or ended < 10 min, live/<g>/rxOff kill switch. */
 const EMO = [['fire', '🔥', 'fire'], ['clap', '👏', 'clap'], ['ball', '🏐', 'volleyball'], ['flex', '💪', 'strong']];
 const EM = Object.fromEntries(EMO.map(e => [e[0], e[1]]));
 const PH = { letsgo: "Let's go!", greatserve: 'Great serve!', nicedig: 'Nice dig!', ace: 'Ace!', niceblock: 'Nice block!', comeon: 'Come on…', gg: 'GG!', wellplayed: 'Well played!' };
@@ -475,7 +475,7 @@ const bucket = () => Math.floor(Date.now() / 2000);
 function react(e, btn) {
   const now = Date.now(); if (RX.rt + RX_GAP > now || RX.rn >= RX_MAX || !rxOn()) return;
   RX.rt = now; RX.re = e; RX.rn++; rxSave(); limNote(); tickRx();
-  arrive(e, 1, true); const b = bucket(); RX.pend[b + e] = (RX.pend[b + e] || 0) + 1;
+  arrive(e, 1, true); const b = bucket();
   RX.qr = { e, b, at: now }; sendQ();
 }
 function phrase(p, t) {
@@ -503,8 +503,8 @@ async function sendQ() {   // offline: keep 1 reaction + 1 phrase, replay on rec
       for (let a = 0; a < 3 && !ok; a++) {
         const lim = await jget(`${k === 'qr' ? 'rxu' : 'phu'}/${g}/${CH.uid}`), n = ((lim && +lim.n) || 0) + 1;
         let r;
-        if (k === 'qr') { const b = a ? bucket() : q.b, cur = +(await jget(`rx/${g}/${b}/${q.e}`)) || 0;
-          r = await patch({ [`rx/${g}/${b}/${q.e}`]: cur + 1, [`rxu/${g}/${CH.uid}`]: { ts: TSV, n, e: q.e, b } }); }
+        if (k === 'qr') { const b = a ? bucket() : q.b;
+          r = await patch({ [`rx/${g}/${b}/${CH.uid}`]: q.e, [`rxu/${g}/${CH.uid}`]: { ts: TSV, n, e: q.e, b } }); }
         else { const v = { p: q.p, ts: TSV, u: CH.uid }; if (q.t) v.t = q.t;
           r = await patch({ [`ph/${g}/${q.k}`]: v, [`phu/${g}/${CH.uid}`]: { ts: TSV, n, k: q.k } }); }
         ok = r.ok; if (!ok && r.status !== 401) break; if (!ok) await new Promise(z => setTimeout(z, 400 + Math.random() * 600));
@@ -518,14 +518,17 @@ addEventListener('online', sendQ);
 function watchRx() {
   const qs = (n) => `?orderBy=${encodeURIComponent('"$key"')}&limitToLast=${n}${QX}`;
   try { const es = new EventSource(`${DB}/rx/${g}.json${qs(4)}`);
-    const apply = (b, e, v) => { const k = b + e, old = (RX.data[b] && RX.data[b][e]) || 0; RX.data[b] = RX.data[b] || {}; RX.data[b][e] = v;
-      if (!RX.base || !rxOn() || !(e in EM)) return; let d = (+v || 0) - old; const mine = Math.min(d, RX.pend[k] || 0); RX.pend[k] = (RX.pend[k] || 0) - mine; d -= mine; if (d > 0) arrive(e, Math.min(d, 99)); };
+    const one = (b, u, e) => { if (typeof e !== 'string' || !(e in EM)) return; RX.data[b] = RX.data[b] || {}; if (RX.data[b][u]) return; RX.data[b][u] = e;
+      if (RX.base && rxOn() && u !== CH.uid) arrive(e, 1); };
+    const bkt = (b, o) => { const c = {}; for (const u in o || {}) { const was = RX.data[b] && RX.data[b][u]; if (!was && typeof o[u] === 'string' && o[u] in EM) { RX.data[b] = RX.data[b] || {}; RX.data[b][u] = o[u]; if (RX.base && rxOn() && u !== CH.uid) c[o[u]] = (c[o[u]] || 0) + 1; } }
+      for (const e in c) arrive(e, Math.min(c[e], 99)); };   // a whole bucket at once: arrive per emoji so bursts group
+    const prune = () => { const ks = Object.keys(RX.data).sort(); while (ks.length > 6) delete RX.data[ks.shift()]; };
     es.addEventListener('put', ev => { try { const d = JSON.parse(ev.data), ps = d.path.split('/').filter(Boolean);
-      if (!ps.length) { if (!RX.base) { RX.data = d.data || {}; RX.base = true; } else for (const b in d.data || {}) for (const e in d.data[b]) apply(b, e, d.data[b][e]); }
-      else if (ps.length === 1) { for (const e in d.data || {}) apply(ps[0], e, d.data[e]); }
-      else apply(ps[0], ps[1], d.data); } catch (x) {} });
-    es.addEventListener('patch', ev => { try { const d = JSON.parse(ev.data), ps = d.path.split('/').filter(Boolean);
-      for (const k in d.data) { const kp = [...ps, ...k.split('/')]; if (kp.length === 2) apply(kp[0], kp[1], d.data[k]); else for (const e in d.data[k] || {}) apply(kp[0], e, d.data[k][e]); } } catch (x) {} });
+      if (!ps.length) { if (!RX.base) { for (const b in d.data || {}) bkt(b, d.data[b]); RX.base = true; } else for (const b in d.data || {}) bkt(b, d.data[b]); }
+      else if (ps.length === 1) bkt(ps[0], d.data); else one(ps[0], ps[1], d.data); prune(); } catch (x) {} });
+    es.addEventListener('patch', ev => { try { const d = JSON.parse(ev.data), ps = d.path.split('/').filter(Boolean); const by = {};
+      for (const k in d.data) { const kp = [...ps, ...k.split('/')]; if (kp.length === 2) (by[kp[0]] = by[kp[0]] || {})[kp[1]] = d.data[k]; else if (kp.length === 1) bkt(kp[0], d.data[k]); }
+      for (const b in by) bkt(b, by[b]); prune(); } catch (x) {} });
   } catch (e) {}
   try { const es = new EventSource(`${DB}/ph/${g}.json${qs(8)}`); let win = [];
     const one = (k, v) => { if (!v || RX.seenPh[k]) return; RX.seenPh[k] = 1; if (!RX.pbase || !rxOn() || !PH[v.p] || v.u === CH.uid) return;
