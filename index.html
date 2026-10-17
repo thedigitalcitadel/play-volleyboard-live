@@ -291,6 +291,7 @@ body{font-family:Nunito,system-ui,sans-serif;background:#E8E8EC;color:#111;min-h
 <div class="foot"><button class="about" id="about" aria-haspopup="dialog">About · More from The Digital Citadel</button></div>
 <div id="aboutw"></div><div id="qvw"></div>
 <script src="qrcode.min.js"></script>
+<script src="fbdb.min.js"></script>
 <script>
 'use strict';
 const DB = window.PVB_DB || 'https://play-volleyboard-default-rtdb.firebaseio.com';
@@ -341,7 +342,8 @@ function cheerH(A, B, bare) {
   const b = t => `<button data-ch="${t.k}" style="background:${t.c};color:${t.i}" aria-label="Cheer ${esc(t.n)}"><span class="ring"></span><span>Cheer ${esc(t.n)}${CH.tot[t.k] ? ` <span class="n">· ${CH.tot[t.k]}</span>` : ''}</span></button>`;
   return `<div class="cheerc"><div class="cheer">${b(A)}${b(B)}</div>${bare ? '' : '<div class="cnote">Cheers are counted on this page · 1 tap every 5 s</div>'}</div>`;
 }
-function render() {
+function render() { renderView(); if (NET) NET.checkEnd(); }
+function renderView() {
   const m = $('main');
   document.documentElement.style.setProperty('--a', S && S.teams ? teams()[0].c : '#FF3E00');
   if (!S || S.status === 'waiting') {   // nothing published yet: the phone only publishes once filming starts
@@ -547,12 +549,8 @@ async function sendCheer() {
   CH.busy = false;
 }
 addEventListener('online', sendCheer); setInterval(sendCheer, 15000);
-function watchCheers() {
-  try { const es = new EventSource(`${DB}/cheers/${g}.json${QX ? '?' + QX.slice(1) : ''}`); const C = {};
-    const sum = () => { const t = { A: 0, B: 0 }; for (const u in C) { t.A += +C[u].A || 0; t.B += +C[u].B || 0; } CH.tot = t; if (S && S.status === 'live') render(); };
-    es.addEventListener('put', e => { try { const d = JSON.parse(e.data); if (d.path === '/') { for (const k in C) delete C[k]; Object.assign(C, d.data || {}); } else { const u = d.path.split('/')[1]; if (d.path.split('/').length === 2) C[u] = d.data || {}; else { C[u] = C[u] || {}; C[u][d.path.split('/')[2]] = d.data; } } sum(); } catch (x) {} });
-    es.onerror = () => {};
-  } catch (e) {}
+function watchCheers() {   // one listener on the shared connection (was its own EventSource stream)
+  NET.on(`cheers/${g}`, v => { const t = { A: 0, B: 0 }; for (const u in v || {}) { const c = v[u] || {}; t.A += +c.A || 0; t.B += +c.B || 0; } CH.tot = t; if (S && S.status === 'live') render(); });
 }
 /* ---------- crowd reactions (page only; the phone, recording, stream and overlay never read these) ----------
    /rx/<g>/<bucket>/<uid> = emoji: one entry per fan per 2 s bucket (bucket = floor(epoch / 2000)); no shared counters, so simultaneous fans never collide; /rxu/<g>/<uid> = this device's limiter {ts, n, e, b}
@@ -705,60 +703,72 @@ async function sendQ() {   // offline: keep 1 reaction + 1 phrase, replay on rec
   RX.busy = false;
 }
 addEventListener('online', sendQ);
-function watchRx() {
-  const qs = (n) => `?orderBy=${encodeURIComponent('"$key"')}&limitToLast=${n}${QX}`;
-  try { const es = new EventSource(`${DB}/rx/${g}.json${qs(4)}`);
-    const one = (b, u, e) => { if (typeof e !== 'string' || !(e in EM)) return; RX.data[b] = RX.data[b] || {}; if (RX.data[b][u]) return; RX.data[b][u] = e;
-      if (RX.base && rxOn() && u !== CH.uid) arrive(e, 1); };
-    const bkt = (b, o) => { const c = {}; for (const u in o || {}) { const was = RX.data[b] && RX.data[b][u]; if (!was && typeof o[u] === 'string' && o[u] in EM) { RX.data[b] = RX.data[b] || {}; RX.data[b][u] = o[u]; if (RX.base && rxOn() && u !== CH.uid) c[o[u]] = (c[o[u]] || 0) + 1; } }
-      for (const e in c) arrive(e, Math.min(c[e], 99)); };   // a whole bucket at once: arrive per emoji so bursts group
-    const prune = () => { const ks = Object.keys(RX.data).sort(); while (ks.length > 6) delete RX.data[ks.shift()]; };
-    es.addEventListener('put', ev => { try { const d = JSON.parse(ev.data), ps = d.path.split('/').filter(Boolean);
-      if (!ps.length) { if (!RX.base) { for (const b in d.data || {}) bkt(b, d.data[b]); RX.base = true; } else for (const b in d.data || {}) bkt(b, d.data[b]); }
-      else if (ps.length === 1) bkt(ps[0], d.data); else one(ps[0], ps[1], d.data); prune(); } catch (x) {} });
-    es.addEventListener('patch', ev => { try { const d = JSON.parse(ev.data), ps = d.path.split('/').filter(Boolean); const by = {};
-      for (const k in d.data) { const kp = [...ps, ...k.split('/')]; if (kp.length === 2) (by[kp[0]] = by[kp[0]] || {})[kp[1]] = d.data[k]; else if (kp.length === 1) bkt(kp[0], d.data[k]); }
-      for (const b in by) bkt(b, by[b]); prune(); } catch (x) {} });
-  } catch (e) {}
-  try { const es = new EventSource(`${DB}/ph/${g}.json${qs(8)}`); let win = [];
-    const one = (k, v) => { if (!v || RX.seenPh[k]) return; RX.seenPh[k] = 1; if (!RX.pbase || !rxOn() || !PH[v.p] || v.u === CH.uid) return;
-      const now = Date.now(); win = win.filter(t => now - t < 1000); if (win.length >= 10) return; win.push(now);   // >10/s per match: dropped
-      toast(v.p, v.t === 'A' || v.t === 'B' ? v.t : null); };
-    es.addEventListener('put', ev => { try { const d = JSON.parse(ev.data), ps = d.path.split('/').filter(Boolean);
-      if (!ps.length) { for (const k in d.data || {}) if (!RX.pbase) RX.seenPh[k] = 1; else one(k, d.data[k]); RX.pbase = true; } else if (ps.length === 1) one(ps[0], d.data); } catch (x) {} });
-  } catch (e) {}
+function watchRx() {   // two query listeners on the shared connection (were two EventSource streams)
+  const bkt = (b, o) => { const c = {}; for (const u in o || {}) { const was = RX.data[b] && RX.data[b][u]; if (!was && typeof o[u] === 'string' && o[u] in EM) { RX.data[b] = RX.data[b] || {}; RX.data[b][u] = o[u]; if (RX.base && rxOn() && u !== CH.uid) c[o[u]] = (c[o[u]] || 0) + 1; } }
+    for (const e in c) arrive(e, Math.min(c[e], 99)); };   // a whole bucket at once: arrive per emoji so bursts group
+  const prune = () => { const ks = Object.keys(RX.data).sort(); while (ks.length > 6) delete RX.data[ks.shift()]; };
+  NET.on(`rx/${g}`, v => { const live = RX.base && !NET.quiet(); RX.base = live; for (const b in v || {}) bkt(b, v[b]); RX.base = true; prune(); }, 4);   // first snapshot (and the one after a reconnect) is the baseline: no replay
+  let win = [];
+  const one = (k, v) => { if (!v || RX.seenPh[k]) return; RX.seenPh[k] = 1; if (!rxOn() || !PH[v.p] || v.u === CH.uid) return;
+    const now = Date.now(); win = win.filter(t => now - t < 1000); if (win.length >= 10) return; win.push(now);   // >10/s per match: dropped
+    toast(v.p, v.t === 'A' || v.t === 'B' ? v.t : null); };
+  NET.on(`ph/${g}`, v => { const live = RX.pbase && !NET.quiet(); for (const k in v || {}) { if (live) one(k, v[k]); else RX.seenPh[k] = 1; } RX.pbase = true; }, 8);
 }
 
 /* ---------- live data ---------- */
-function setPath(path, data) {
-  if (path === '/' || path === '') { S = data; return; }
-  if (!S) S = {};
-  const ks = path.replace(/^\//, '').split('/'); let o = S;
-  for (let i = 0; i < ks.length - 1; i++) { o[ks[i]] = o[ks[i]] && typeof o[ks[i]] === 'object' ? o[ks[i]] : {}; o = o[ks[i]]; }
-  if (data === null) delete o[ks[ks.length - 1]]; else o[ks[ks.length - 1]] = data;
-}
+/* ONE realtime connection per viewer tab.
+   Before (to Oct 17 2026): 4 REST EventSource streams per match tab (live, cheers, rx, ph) and 5 on day links (+ day), never closed;
+   Firebase counts every open REST stream as a simultaneous connection, so Spark's 100 capped the page at ~20-25 viewers.
+   Now: one Firebase SDK app per tab = one WebSocket; all listeners share it. Same paths, same queries, same data, same rules.
+   The socket is dropped after 60 s hidden (and on pagehide), and once the match is over and the 10-min reaction window has
+   closed; it comes back when the page is visible again. Writes (cheers, reactions, phrases) stay short REST requests. */
+const HIDE_MS = +window.PVB_HIDE_MS || 60000, END_MS = +window.PVB_END_MS || 30000, DAYPOLL_MS = +window.PVB_DAYPOLL_MS || 30000;
+const isOver = () => { if (!S) return false; const [A, B] = teams(); return S.status === 'ended' || (S.status === 'live' && Math.max(A.sets, B.sets) >= need()); };
+const goDay = cur => { if (typeof cur === 'string' && /^[a-z0-9]{6,32}$/.test(cur) && cur !== g) location.replace(location.pathname + '?d=' + D + '&g=' + cur); };
+const NET = (() => {
+  const F = window.PVBFB; if (!F) return null;
+  let emu = null; try { const u = new URL(DB); if (/^(localhost|127\.0\.0\.1)$/.test(u.hostname)) emu = u; } catch (e) {}   // test hook: local emulator
+  const ns = (QX.match(/[?&]ns=([\w-]+)/) || [])[1];
+  const app = F.initializeApp({ databaseURL: emu ? `https://${ns || 'play-volleyboard-default-rtdb'}.firebaseio.com` : DB }, 'pvb-viewer');
+  const db = F.getDatabase(app); if (emu) F.connectDatabaseEmulator(db, emu.hostname, +emu.port);
+  let off = '', hT = 0, eT = 0, endAt = 0, pT = 0, quietTo = 0, downs = 0, ups = 0;
+  const down = why => { clearTimeout(hT); if (!off) { F.goOffline(db); downs++; } off = why; if (why === 'ended' && D) pollDay(); };
+  const up = () => { clearInterval(pT); pT = 0; if (off) { off = ''; F.goOnline(db); ups++; quietTo = Date.now() + 2500; } };
+  function pollDay() {   // day link after the match: no open connection; a tiny REST read of /day/<id> every 30 s while the page is visible
+    clearInterval(pT); pT = setInterval(async () => { if (document.visibilityState !== 'visible') return;
+      try { const r = await fetch(`${DB}/day/${D}.json${QX ? '?' + QX.slice(1) : ''}`); if (r.ok) { const v = await r.json(); goDay(v && v.cur); } } catch (e) {} }, DAYPOLL_MS); }
+  function checkEnd() {
+    if (!isOver()) { clearTimeout(eT); endAt = 0; return; }
+    const t = Math.max(Date.now() + END_MS, S.rxOff === true ? 0 : (+S.updatedAt || Date.now()) + OPEN_AFTER);   // keep the post-match reactions window open
+    if (endAt && Math.abs(t - endAt) < 1000) return; endAt = t; clearTimeout(eT);
+    eT = setTimeout(() => { if (isOver() && document.visibilityState === 'visible') down('ended'); }, t - Date.now());
+  }
+  document.addEventListener('visibilitychange', () => {
+    clearTimeout(hT);
+    if (document.visibilityState === 'hidden') hT = setTimeout(() => down('hidden'), HIDE_MS);
+    else { if (off) up(); endAt = 0; checkEnd(); }   // back: reconnect; if the match is still over it closes again after END_MS
+  });
+  addEventListener('pagehide', () => down('pagehide'));
+  addEventListener('pageshow', e => { if (e.persisted && document.visibilityState === 'visible') { up(); endAt = 0; checkEnd(); } });
+  const on = (path, cb, last, cancel) => { const r = F.ref(db, path), q = last ? F.query(r, F.orderByKey(), F.limitToLast(last)) : r;
+    return F.onValue(q, sn => { try { cb(sn.val()); } catch (e) {} }, cancel || (() => {})); };
+  return { on, checkEnd, down, up, quiet: () => Date.now() < quietTo, state: () => ({ off, endAt, downs, ups, polling: !!pT }) };
+})();
 function follow() {   // day link: watch the pointer; a new match id reloads onto it (old ids keep their own data paths)
   if (!D) return false;
-  const go = cur => { if (typeof cur === 'string' && /^[a-z0-9]{6,32}$/.test(cur) && cur !== g) location.replace(location.pathname + '?d=' + D + '&g=' + cur); };
-  try { const es = new EventSource(`${DB}/day/${D}.json${QX ? '?' + QX.slice(1) : ''}`); const P = {};
-    es.addEventListener('put', e => { try { const d = JSON.parse(e.data); if (d.path === '/') Object.assign(P, d.data || {}); else P[d.path.replace(/^\//, '')] = d.data; go(P.cur); } catch (x) {} });
-    es.addEventListener('patch', e => { try { const d = JSON.parse(e.data); Object.assign(P, d.data || {}); go(P.cur); } catch (x) {} });
-    es.onerror = () => {};
-  } catch (e) {}
+  NET.on(`day/${D}`, v => goDay(v && v.cur));
   return true;
 }
 function start() {
+  if (!NET) { $('main').innerHTML = '<p class="msg">The live score could not load. Please refresh the page.</p>'; return; }
   if (follow() && !g) { render(); return; }   // day link before the first match is published: MATCH STARTING SOON
   if (!/^[a-z0-9]{6,32}$/.test(g)) { $('main').innerHTML = '<p class="msg">This link is missing its game code.</p>'; return; }
   render();
-  const es = new EventSource(`${DB}/live/${g}.json${QX ? '?' + QX.slice(1) : ''}`);
-  const on = e => { try { const d = JSON.parse(e.data); setPath(d.path, d.data); render(); } catch (x) {} };
-  es.addEventListener('put', on); es.addEventListener('patch', e => { try { const d = JSON.parse(e.data); for (const k in d.data) setPath((d.path === '/' ? '' : d.path) + '/' + k, d.data[k]); render(); } catch (x) {} });
-  es.addEventListener('cancel', () => { $('main').innerHTML = '<p class="msg">This game is not available.</p>'; });
+  NET.on(`live/${g}`, v => { S = v; render(); }, 0, () => { $('main').innerHTML = '<p class="msg">This game is not available.</p>'; });
   watchCheers(); watchRx();
 }
 setInterval(() => { const u = $('upd'); if (u && S && S.status === 'live' && !setPoint(...teams())) u.textContent = updLine(); }, 5000);
-window.PVBLive = { card: () => window.__lastCard, feed: d => { S = d; render(); }, state: () => S, rx: () => RX, day: () => D, game: () => g };   // test hook (local)
+window.PVBLive = { card: () => window.__lastCard, feed: d => { S = d; render(); }, state: () => S, rx: () => RX, day: () => D, game: () => g, net: () => NET && NET.state() };   // test hook (local)
 start();
 
 /* ---------- pass-it-on Share + QR (live score page only; never an app download QR). Generated here, offline. ---------- */
