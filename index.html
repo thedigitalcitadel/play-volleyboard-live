@@ -397,7 +397,8 @@ const QUIET_MS = 3600000, EXP_MS = 432000000;
 const sNow = () => Date.now() + SKEW;
 const isStale = () => !!(S && S.status === 'live' && +S.updatedAt > 0 && sNow() - +S.updatedAt > STALE_MS);
 function missing(on) {
-  if (!on) { clearTimeout(missT); missT = 0; if (UNAV === 'missing') UNAV = ''; return; }
+  if (!on) { clearTimeout(missT); missT = 0; if (UNAV === 'missing' || UNAV === 'ended') UNAV = ''; return; }
+  if (!D) { if (!UNAV) UNAV = 'ended'; return; }
   if (!missT && !UNAV) missT = setTimeout(() => { missT = 0; if (!S && !UNAV) { UNAV = 'missing'; render(); } }, MISS_MS);
 }
 function fixc(c) {
@@ -482,6 +483,7 @@ function fitBtns() {
     if (over(el) && el.tagName === 'SPAN') { el.classList.add('w2'); el.style.fontSize = ''; f = parseFloat(getComputedStyle(el).fontSize); while (f > 12 && over(el)) { f -= .5; el.style.fontSize = f + 'px'; } } });
 }
 const UNAVH = {
+  ended: ['This match has ended', 'Live scores are removed shortly after the match ends. If the coach shares this match again, the score shows here by itself.'],
   expired: ['This game is not available.', 'This live score has expired. Live scores are removed 5 days after the match.'],
   missing: ['No live score yet',  "There's no live score for this link. The match may not have started yet, or it has ended and the link has expired. This page updates by itself if the score starts."],
   nocode: ['This link is missing its game code.', 'Ask the coach to share the live score link again.'],
@@ -493,7 +495,7 @@ function renderView() {
   $('shb').hidden = !!UNAV;
   if (UNAV) {
     const [h, p] = UNAVH[UNAV] || UNAVH.expired;
-    setTag('off', UNAV === 'nocode' || UNAV === 'noload' ? 'ERROR' : 'UNAVAILABLE'); setCue('Live score link', '');
+    setTag(UNAV === 'ended' ? 'fin' : 'off', UNAV === 'nocode' || UNAV === 'noload' ? 'ERROR' : UNAV === 'ended' ? 'ENDED' : 'UNAVAILABLE'); setCue('Live score link', '');
     const card = `<div class="sc na" role="status"><div class="conn"><h2 class="msg">${h}</h2><p>${p}</p></div></div>`;
     m.innerHTML = L ? `<div class="lcol lmsg">${card}</div>` : `${card}<div class="grow"></div>${getH()}`;
     P = null; return;
@@ -927,7 +929,7 @@ function start() {
   if (!/^[a-z0-9]{6,32}$/.test(g)) { UNAV = 'nocode'; render(); return; }
   render();
   NET.on(`live/${g}`, v => { const had = !!S; S = v; GOT = true; CONN.last = Date.now();
-    if (v == null) { if (had) UNAV = 'missing'; else missing(true); } else missing(false);
+    if (v == null) { if (had) UNAV = D ? 'missing' : 'ended'; else missing(true); } else missing(false);
     render(); }, 0, () => { UNAV = 'expired'; S = null; render(); });
   NET.on('.info/serverTimeOffset', v => { SKEW = +v || 0; });
   NET.on('.info/connected', v => { CONN.on = !!v; if (v) CONN.was = true; else CONN.since = Date.now(); });
