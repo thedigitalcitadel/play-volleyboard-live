@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#000000">
-<title>Volleyboard · Live score</title>
+<title>Volley Good Show · Live score</title>
 <link rel="icon" href="img/vb-icon-b-128.png"><link rel="apple-touch-icon" href="img/vb-icon-b-256.png">
 <style>
 @font-face{font-family:Nunito;src:url(fonts/nunito.woff2) format('woff2');font-weight:200 1000;font-display:swap}
@@ -21,6 +21,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .wm{display:flex;align-items:center;font:italic 900 20px/1 Nunito;letter-spacing:.02em;flex:none;margin-right:auto;white-space:nowrap}
 .wm .lg{width:32px;height:32px;border-radius:22%;box-shadow:0 0 0 2px #fff;margin-right:8px;flex:none;display:block}
 .wm b{color:#fff;font-weight:900}.wm i{color:var(--or);font-style:italic}
+.wm .wt{display:block}
 .pill{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:99px;font:900 14px/1 Nunito;letter-spacing:.08em;background:#111;color:#fff;border:2px solid #fff;white-space:nowrap}
 .pill .dot{width:10px;height:10px;border-radius:50%;background:var(--red-d);animation:lp 1.6s infinite}
 @keyframes lp{0%{box-shadow:0 0 0 0 rgba(255,90,95,.6)}70%{box-shadow:0 0 0 7px rgba(255,90,95,0)}100%{box-shadow:0 0 0 0 rgba(255,90,95,0)}}
@@ -230,7 +231,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .qbox img{display:block;image-rendering:pixelated;width:260px;height:260px}
 .qlock{display:flex;align-items:center;gap:12px}
 .qlock .ql{width:60px;height:60px;border-radius:22%;box-shadow:0 0 0 2px #111,0 4px 0 #111;display:block}
-.qw b{display:block;font:italic 900 26px/1 Nunito;letter-spacing:.02em;color:#111}.qw b span{color:var(--red-l)}
+.qw b{display:block;font:italic 900 26px/1 Nunito;letter-spacing:.02em;color:#111}.qw b span{color:var(--red-l);white-space:nowrap}
 .qw small{display:block;margin-top:4px;font:700 13px/1.2 Nunito;color:#374151}
 .qv p{font:800 15px/1.3 Nunito;text-align:center}
 .qv .hint{font:700 13px/1.3 Nunito;color:#374151;display:flex;align-items:center;gap:6px}
@@ -297,6 +298,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
  .btn{height:56px;font-size:17px}
 }
 @media (max-width:399px){.chips span{font-size:12px;padding:0 8px;gap:5px}.top{gap:7px}.wm{font-size:17px}.wm .lg{width:28px;height:28px;margin-right:6px}.pill{height:28px;padding:0 9px;font-size:13px}.shr{padding:0 11px 0 9px}.get{font-size:12.5px;padding:8px 12px}.get>.ic{display:none}.nm{font-size:22px}}
+@media (max-width:479px){.wm .wt b,.wm .wt i{display:block;line-height:1}.wm .wt i{margin-top:1px}}
 @media (max-height:700px) and (orientation:portrait){.row{height:86px}.pts{width:88px;font-size:56px}.mid{height:26px}.sch{margin-bottom:8px}.ln{margin-top:8px}.rxr button{height:44px}.phr button{height:44px}.cheer button{height:44px}}
 body.L .top{padding-top:max(6px,env(safe-area-inset-top));padding-bottom:6px}
 body.L .wm .lg{width:30px;height:30px}
@@ -348,10 +350,10 @@ body.L .lmsg{flex:1;display:flex;flex-direction:column;gap:10px;justify-content:
  .asheet,.asheet.on{transform:none!important;opacity:0;transition:opacity .15s!important}.asheet.on{opacity:1}
 }
 </style></head><body>
-<div class="wrap"><div class="top"><div class="wm"><img class="lg" src="img/vb-icon-b-128.png" srcset="img/vb-icon-b-128.png 1x, img/vb-icon-b-256.png 2x" alt="" width="32" height="32"><b>VOLLEY</b><i>BOARD</i></div><div class="pill off" id="tag">LOADING</div><button class="shr" id="shb" aria-label="Share this live score: show QR code" aria-haspopup="dialog"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7h-4M14 18v3"/></svg>Share</button></div>
+<div class="wrap"><div class="top"><div class="wm"><img class="lg" src="img/vb-icon-b-128.png" srcset="img/vb-icon-b-128.png 1x, img/vb-icon-b-256.png 2x" alt="" width="32" height="32"><span class="wt"><b>VOLLEY</b> <i>GOOD SHOW</i></span></div><div class="pill off" id="tag">LOADING</div><button class="shr" id="shb" aria-label="Share this live score: show QR code" aria-haspopup="dialog"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7h-4M14 18v3"/></svg>Share</button></div>
 <div class="cue" id="cue"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10 18h4"/></svg><span id="cuet">Live from the scorer</span><span id="upd"></span></div>
 <div class="main" id="main"></div>
-<div class="foot"><button class="about" id="about" aria-haspopup="dialog">Volleyboard by The Digital Citadel · About</button></div></div>
+<div class="foot"><button class="about" id="about" aria-haspopup="dialog">Volley Good Show by The Digital Citadel · About</button></div></div>
 <div id="say" class="sr" aria-live="polite"></div>
 <div id="sheetw"></div>
 <div id="aboutw"></div><div id="qvw"></div>
@@ -450,7 +452,7 @@ function cheerH(A, B, bare) {
   const b = t => `<button data-ch="${t.k}" style="background:${t.c};color:${t.i}" aria-label="Cheer ${esc(t.n)}"><span class="ring"></span><span class="cl"><span class="cn">Cheer ${esc(t.n)}</span>${CH.tot[t.k] ? `<span class="n">· ${CH.tot[t.k]}</span>` : ''}</span></button>`;
   return `<div class="cheer">${b(A)}${b(B)}</div>${bare ? '' : '<div class="cnote">Cheers are counted on this page · 1 tap every 5 s</div>'}`;
 }
-const getH = () => `<div class="get">${ICN.phone}<span>Keeping score? Score, film and stream in one app.</span>${STORE_URL ? `<a href="${esc(STORE_URL)}" target="_blank" rel="noopener">Get Volleyboard</a>` : ''}</div>`;
+const getH = () => `<div class="get">${ICN.phone}<span>Keeping score? Score, film and stream in one app.</span>${STORE_URL ? `<a href="${esc(STORE_URL)}" target="_blank" rel="noopener">Get Volley Good Show</a>` : ''}</div>`;
 const passH = fin => `<div class="pass"><button class="btn pri" id="bqr">${ICN.qr}<span>Show QR</span></button><button class="btn" id="${fin ? 'mshare' : 'bsh'}">${ICN.share}<span>${fin ? 'Share final' : 'Share link'}</span></button></div>`;
 function setTag(cls, html) { const t = $('tag'); t.className = 'pill ' + cls; t.innerHTML = html; }
 function setCue(t, u) { $('cuet').textContent = t; $('upd').textContent = u || ''; }
@@ -658,7 +660,7 @@ async function cardBlob(A, B, W, L, draw) {
   const rr = (X, Y, w, h, r) => { x.beginPath(); x.roundRect ? x.roundRect(X, Y, w, h, r) : x.rect(X, Y, w, h); };
   x.fillStyle = '#E8E8EC'; x.fillRect(0, 0, 1080, 1350); x.fillStyle = draw ? '#FF3E00' : W.c; x.fillRect(0, 0, 1080, 18);
   if (!draw) { x.save(); x.translate(540, 330); x.globalAlpha = .18; x.fillStyle = W.c; for (let a = 0; a < 360; a += 16) { x.beginPath(); x.moveTo(0, 0); x.arc(0, 0, 1000, a * Math.PI / 180, (a + 6) * Math.PI / 180); x.closePath(); x.fill(); } x.restore(); }
-  x.textBaseline = 'middle'; x.textAlign = 'left'; x.font = 'italic 900 44px Orbitron'; x.fillStyle = '#111'; x.fillText('VOLLEYBOARD', 75, 105); x.fillStyle = '#C8102E'; x.fillText('VOLLEYBOARD', 70, 100);
+  x.textBaseline = 'middle'; x.textAlign = 'left'; x.font = 'italic 900 44px Orbitron'; for (let f = 44; f > 28 && x.measureText('VOLLEY GOOD SHOW').width > 700; f -= 2) x.font = `italic 900 ${f - 2}px Orbitron`; x.fillStyle = '#111'; x.fillText('VOLLEY GOOD SHOW', 75, 105); x.fillStyle = '#C8102E'; x.fillText('VOLLEY GOOD SHOW', 70, 100);
   rr(800, 60, 210, 76, 38); x.fillStyle = '#fff'; x.fill(); x.lineWidth = 6; x.strokeStyle = '#111'; x.stroke(); x.fillStyle = '#111'; x.font = '900 40px Nunito'; x.textAlign = 'center'; x.fillText('FINAL', 905, 99);
   const lines = (s, max, floor, w) => { let f = max; for (; f >= floor; f -= 2) { x.font = `1000 ${f}px Nunito`; if (x.measureText(s).width <= w) return [f, [s]]; }
     f = floor; x.font = `1000 ${f}px Nunito`; const ws = s.split(/\s+/), out = ['']; for (const t of ws) { const c = out[out.length - 1] ? out[out.length - 1] + ' ' + t : t; if (x.measureText(c).width <= w || !out[out.length - 1]) out[out.length - 1] = c; else out.push(t); }
@@ -678,8 +680,9 @@ async function cardBlob(A, B, W, L, draw) {
     rr(cx, cy - 32, w, 64, 32); x.fillStyle = '#262626'; x.fill(); x.fillStyle = '#fff'; x.fillText(t, cx + 26, cy + 2); cx += w + 16; });
   x.textAlign = 'center'; x.fillStyle = '#333'; x.font = '800 34px Nunito';
   const dt = new Date(S.updatedAt ? +S.updatedAt : Date.now()).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
-  x.fillText(`${dt} · Scored live with Volleyboard by The Digital Citadel`, 540, 1290);
-  const blob = await new Promise(r => cv.toBlob(r, 'image/png')); const name = `volleyboard-${A.n}-vs-${B.n}.png`.replace(/[^\w.-]+/g, '-');
+  const cr = `${dt} · Scored live with Volley Good Show by The Digital Citadel`; for (let f = 34; f > 22 && x.measureText(cr).width > 980; f -= 2) x.font = `800 ${f - 2}px Nunito`;
+  x.fillText(cr, 540, 1290);
+  const blob = await new Promise(r => cv.toBlob(r, 'image/png')); const name = `VolleyGoodShow_${A.n}-vs-${B.n}.png`.replace(/[^\w.-]+/g, '-');
   return { blob, name, url: URL.createObjectURL(blob) };
 }
 const CH_GAP = 5000, CH_MAX = 30;
@@ -954,7 +957,7 @@ function openQR() {
     land ? 300 : innerHeight - 410, 300)), cell = Math.max(2, Math.floor(px / q.getModuleCount())), sz = cell * q.getModuleCount();
   $('qvw').innerHTML = `<div class="qv" id="qv" role="dialog" aria-modal="true" aria-label="QR code for the live score"><button class="x" id="qx">Done</button>
     <div class="qcol"><div class="qbox"><img id="qimg" src="${q.createDataURL(cell, 0)}" width="${sz}" height="${sz}" style="width:${sz}px;height:${sz}px" alt="QR code for this live score page"></div>
-    <div class="qlock"><img class="ql" src="img/vb-icon-b-256.png" alt="Volleyboard app icon"><div class="qw"><b>VOLLEY<span>BOARD</span></b><small>Live from the scorer's phone</small></div></div></div>
+    <div class="qlock"><img class="ql" src="img/vb-icon-b-256.png" alt="Volley Good Show app icon"><div class="qw"><b>VOLLEY<span> GOOD SHOW</span></b><small>Live from the scorer's phone</small></div></div></div>
     <div class="qcol r"><h2>SHOW THIS TO<br>THE <em>NEXT PERSON</em></h2>${named ? `<div class="tm"><i style="background:${A.c}"></i>${esc(A.n)} <s>vs</s> <i style="background:${B.c}"></i>${esc(B.n)}</div>` : ''}
     <p>Point your camera here.<br>Live score, no app needed.</p>${lblH()}<div class="hint">${ICN.sun}Turn your brightness up · screen stays on while open</div>
     <div class="acts">${navigator.share ? `<button class="btn pri" id="qsh">${ICN.share}<span>Share link</span></button>` : ''}<button class="btn${navigator.share ? '' : ' pri'}" id="qcp">${ICN.link}<span>Copy link</span></button></div></div></div>`;
@@ -976,7 +979,7 @@ function qKey(e) {
   if (!v.contains(document.activeElement)) { e.preventDefault(); a.focus(); } else if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
 }
 addEventListener('popstate', () => { if (qOpen) closeQR(true); });
-async function nativeShare() { try { await navigator.share({ title: 'Volleyboard live score', url: shareUrl() }); } catch (e) {} }
+async function nativeShare() { try { await navigator.share({ title: 'Volley Good Show live score', url: shareUrl() }); } catch (e) {} }
 async function copyLink(btn) {
   const u = shareUrl(); let ok = false;
   try { await navigator.clipboard.writeText(u); ok = true; } catch (e) {}
@@ -1003,10 +1006,10 @@ let aboutOpen = false;
 function openAbout() {
   if (aboutOpen) return; aboutOpen = true; const w = $('aboutw');
   w.innerHTML = `<div class="ascrim" id="ascrim"></div><div class="asheet" id="asheet" role="dialog" aria-modal="true" aria-labelledby="ah"><div class="ahd"><h2 id="ah">MORE FROM THE DIGITAL CITADEL</h2><button class="ax" id="ax" aria-label="Close">✕</button></div>
-  <div class="abody"><p class="aintro"><b>Volleyboard</b> is the free live score page for this match, shared by the scorer. No account needed, nothing to install.</p>
+  <div class="abody"><p class="aintro"><b>Volley Good Show</b> is the free live score page for this match, shared by the scorer. No account needed, nothing to install.</p>
   <div class="acards"><div class="acard"><div class="aicon" aria-hidden="true">${ICN.moon}</div><div class="atxt"><h3>Sleep Train</h3></div><a class="aview" href="${ST_URL}" target="_blank" rel="noopener" aria-label="View Sleep Train in the app store">View</a></div>
   <div class="acard"><div class="atxt"><h3>Manalogy</h3><span class="atag soon">Coming soon</span></div></div></div>
-  <div class="afoot"><a href="https://thedigitalcitadel.com/" target="_blank" rel="noopener">thedigitalcitadel.com</a><span>Questions or feedback? <a href="mailto:support@thedigitalcitadel.com">support@thedigitalcitadel.com</a></span><span class="cpy">© The Digital Citadel</span></div></div></div>`;
+  <div class="afoot"><a href="https://thedigitalcitadel.com/" target="_blank" rel="noopener">thedigitalcitadel.com</a><span class="cpy">© The Digital Citadel</span></div></div></div>`;
   document.querySelector('.wrap').setAttribute('aria-hidden', 'true'); CZ.style.visibility = 'hidden';
   requestAnimationFrame(() => requestAnimationFrame(() => { $('ascrim').classList.add('on'); $('asheet').classList.add('on'); }));
   $('ax').focus(); $('ax').onclick = closeAbout; $('ascrim').onclick = closeAbout;
