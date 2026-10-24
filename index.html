@@ -450,7 +450,7 @@ function cheerH(A, B, bare) {
   const b = t => `<button data-ch="${t.k}" style="background:${t.c};color:${t.i}" aria-label="Cheer ${esc(t.n)}"><span class="ring"></span><span class="cl"><span class="cn">Cheer ${esc(t.n)}</span>${CH.tot[t.k] ? `<span class="n">· ${CH.tot[t.k]}</span>` : ''}</span></button>`;
   return `<div class="cheer">${b(A)}${b(B)}</div>${bare ? '' : '<div class="cnote">Cheers are counted on this page · 1 tap every 5 s</div>'}`;
 }
-const getH = () => `<div class="get">${ICN.phone}<span>Coaching a team? Score, film and stream in one app.</span>${STORE_URL ? `<a href="${esc(STORE_URL)}" target="_blank" rel="noopener">Get Volleyboard</a>` : ''}</div>`;
+const getH = () => `<div class="get">${ICN.phone}<span>Keeping score? Score, film and stream in one app.</span>${STORE_URL ? `<a href="${esc(STORE_URL)}" target="_blank" rel="noopener">Get Volleyboard</a>` : ''}</div>`;
 const passH = fin => `<div class="pass"><button class="btn pri" id="bqr">${ICN.qr}<span>Show QR</span></button><button class="btn" id="${fin ? 'mshare' : 'bsh'}">${ICN.share}<span>${fin ? 'Share final' : 'Share link'}</span></button></div>`;
 function setTag(cls, html) { const t = $('tag'); t.className = 'pill ' + cls; t.innerHTML = html; }
 function setCue(t, u) { $('cuet').textContent = t; $('upd').textContent = u || ''; }
@@ -483,10 +483,10 @@ function fitBtns() {
     if (over(el) && el.tagName === 'SPAN') { el.classList.add('w2'); el.style.fontSize = ''; f = parseFloat(getComputedStyle(el).fontSize); while (f > 12 && over(el)) { f -= .5; el.style.fontSize = f + 'px'; } } });
 }
 const UNAVH = {
-  ended: ['This match has ended', 'Live scores are removed shortly after the match ends. If the coach shares this match again, the score shows here by itself.'],
+  ended: ['This match has ended', 'Live scores are removed shortly after the match ends. If the scorer shares this match again, the score shows here by itself.'],
   expired: ['This game is not available.', 'This live score has expired. Live scores are removed 5 days after the match.'],
   missing: ['No live score yet',  "There's no live score for this link. The match may not have started yet, or it has ended and the link has expired. This page updates by itself if the score starts."],
-  nocode: ['This link is missing its game code.', 'Ask the coach to share the live score link again.'],
+  nocode: ['This link is missing its game code.', 'Ask the scorer to share the live score link again.'],
   noload: ['The live score could not load.', 'Please refresh the page.'] };
 function renderView() {
   const m = $('main'), L = isL();
@@ -505,7 +505,7 @@ function renderView() {
     if (GOT || D) { setTag('fin', 'SOON'); } else setTag('off', 'LOADING');
     setCue('Live from the scorer', '');
     const h = GOT || D ? 'MATCH STARTING SOON' : 'CONNECTING TO THE SCORER';
-    const card = `<div class="sc"><div class="conn"><h2>${h}</h2><p>${named ? `${esc(A.n)} vs ${esc(B.n)} · the score appears here live.` : 'The score appears here as soon as the coach starts filming.'}</p><div class="dots" aria-hidden="true"><i></i><i></i><i></i></div></div><div class="skw" aria-hidden="true"><div class="sk"></div><div class="sk"></div></div></div><p class="keep">Keep this page open. No refresh, no app needed.</p>`;
+    const card = `<div class="sc"><div class="conn"><h2>${h}</h2><p>${named ? `${esc(A.n)} vs ${esc(B.n)} · the score appears here live.` : 'The score appears here as soon as the scorer starts filming.'}</p><div class="dots" aria-hidden="true"><i></i><i></i><i></i></div></div><div class="skw" aria-hidden="true"><div class="sk"></div><div class="sk"></div></div></div><p class="keep">Keep this page open. No refresh, no app needed.</p>`;
     m.innerHTML = L ? `<div class="lcol">${card}</div><div class="rail"><div class="grow"></div>${passH(false)}${getH()}</div>` : `${card}<div class="grow"></div>${passH(false)}${getH()}`;
     wirePass(false); P = null; return;
   }
@@ -649,7 +649,7 @@ async function openShare(A, B, W, L, draw) {
 }
 function openSets(A, B) {
   const ss = Array.isArray(S.sets) ? S.sets : [];
-  msheet('SET DETAILS', `<div class="bd"><table class="stbl">${ss.map((s, i) => { const w = +s.A > +s.B ? A : +s.B > +s.A ? B : null; return `<tr><td>Set ${i + 1}</td><td>${w ? `<span class="sw" style="background:${w.c}"></span>${esc(w.n)}` : 'Level'}</td><td>${+s.A || 0}–${+s.B || 0}</td></tr>`; }).join('') || '<tr><td>No sets recorded</td><td></td><td></td></tr>'}</table><div class="note">Scores as ${esc(A.n)}–${esc(B.n)}. Only what the coach's phone shares; no player names.</div></div>`);
+  msheet('SET DETAILS', `<div class="bd"><table class="stbl">${ss.map((s, i) => { const w = +s.A > +s.B ? A : +s.B > +s.A ? B : null; return `<tr><td>Set ${i + 1}</td><td>${w ? `<span class="sw" style="background:${w.c}"></span>${esc(w.n)}` : 'Level'}</td><td>${+s.A || 0}–${+s.B || 0}</td></tr>`; }).join('') || '<tr><td>No sets recorded</td><td></td><td></td></tr>'}</table><div class="note">Scores as ${esc(A.n)}–${esc(B.n)}. Only what the scorer's phone shares; no player names.</div></div>`);
 }
 async function cardBlob(A, B, W, L, draw) {
   try { await document.fonts.load('900 italic 44px Orbitron'); await document.fonts.load('900 60px Nunito'); } catch (e) {}
@@ -1003,7 +1003,7 @@ let aboutOpen = false;
 function openAbout() {
   if (aboutOpen) return; aboutOpen = true; const w = $('aboutw');
   w.innerHTML = `<div class="ascrim" id="ascrim"></div><div class="asheet" id="asheet" role="dialog" aria-modal="true" aria-labelledby="ah"><div class="ahd"><h2 id="ah">MORE FROM THE DIGITAL CITADEL</h2><button class="ax" id="ax" aria-label="Close">✕</button></div>
-  <div class="abody"><p class="aintro"><b>Play Volleyboard</b> is the free live score page for this match, shared by your coach. No account needed, nothing to install.</p>
+  <div class="abody"><p class="aintro"><b>Volleyboard</b> is the free live score page for this match, shared by the scorer. No account needed, nothing to install.</p>
   <div class="acards"><div class="acard"><div class="aicon" aria-hidden="true">${ICN.moon}</div><div class="atxt"><h3>Sleep Train</h3></div><a class="aview" href="${ST_URL}" target="_blank" rel="noopener" aria-label="View Sleep Train in the app store">View</a></div>
   <div class="acard"><div class="atxt"><h3>Manalogy</h3><span class="atag soon">Coming soon</span></div></div></div>
   <div class="afoot"><a href="https://thedigitalcitadel.com/" target="_blank" rel="noopener">thedigitalcitadel.com</a><span>Questions or feedback? <a href="mailto:support@thedigitalcitadel.com">support@thedigitalcitadel.com</a></span><span class="cpy">© The Digital Citadel</span></div></div></div>`;
