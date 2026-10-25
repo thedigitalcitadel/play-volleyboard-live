@@ -411,7 +411,7 @@ function fixc(c) {
   return c;
 }
 const when = ts => { const d = new Date(+ts); return Date.now() - d > 20 * 3600e3 ? d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + hm(ts) : hm(ts); };
-const STORE_URL = '';
+const STORE_URL = 'https://apps.apple.com/app/id6820489633';
 const ICN = {
   qr: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7h-4M14 18v3"/></svg>',
   share: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>',
@@ -452,7 +452,7 @@ function cheerH(A, B, bare) {
   const b = t => `<button data-ch="${t.k}" style="background:${t.c};color:${t.i}" aria-label="Cheer ${esc(t.n)}"><span class="ring"></span><span class="cl"><span class="cn">Cheer ${esc(t.n)}</span>${CH.tot[t.k] ? `<span class="n">· ${CH.tot[t.k]}</span>` : ''}</span></button>`;
   return `<div class="cheer">${b(A)}${b(B)}</div>${bare ? '' : '<div class="cnote">Cheers are counted on this page · 1 tap every 5 s</div>'}`;
 }
-const getH = () => `<div class="get">${ICN.phone}<span>Keeping score? Score, film and stream in one app.</span>${STORE_URL ? `<a href="${esc(STORE_URL)}" target="_blank" rel="noopener">Get Volley Good Show</a>` : ''}</div>`;
+const getH = () => `<div class="get">${ICN.phone}<span>Keeping score? Score, film and stream in one app.</span>${STORE_URL ? `<a href="${esc(STORE_URL)}" target="_blank" rel="noopener">Get Volley Good Show on the App Store</a>` : ''}</div>`;
 const passH = fin => `<div class="pass"><button class="btn pri" id="bqr">${ICN.qr}<span>Show QR</span></button><button class="btn" id="${fin ? 'mshare' : 'bsh'}">${ICN.share}<span>${fin ? 'Share final' : 'Share link'}</span></button></div>`;
 function setTag(cls, html) { const t = $('tag'); t.className = 'pill ' + cls; t.innerHTML = html; }
 function setCue(t, u) { $('cuet').textContent = t; $('upd').textContent = u || ''; }
