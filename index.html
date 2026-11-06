@@ -970,7 +970,7 @@ function qKey(e) {
   if (!v.contains(document.activeElement)) { e.preventDefault(); a.focus(); } else if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
 }
 addEventListener('popstate', () => { if (qOpen) closeQR(true); });
-async function nativeShare() { try { await navigator.share({ title: 'Volley Good Show live score', url: shareUrl() }); } catch (e) {} }
+async function nativeShare() { try { await navigator.share({ title: 'Volley Good Show live score', text: `Get the app: ${STORE_URL}`, url: shareUrl() }); } catch (e) {} }
 async function copyLink(btn) {
   const u = shareUrl(); let ok = false;
   try { await navigator.clipboard.writeText(u); ok = true; } catch (e) {}
